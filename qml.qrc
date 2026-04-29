@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>config.json</file>
+        <file>qml/Main.qml</file>
+        <file>qml/scenes/GameScene.qml</file>
+        <file>qml/components/RuneTile.qml</file>
+        <file>qml/components/Hud.qml</file>
+        <file>qml/components/MenuOverlay.qml</file>
+        <file>qml/components/GameOverOverlay.qml</file>
+        <file>qml/logic/Board.js</file>
+    </qresource>
+</RCC>

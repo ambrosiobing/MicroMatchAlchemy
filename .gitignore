@@ -1,0 +1,40 @@
+# Build artefacts
+build/
+build-*/
+*.user
+*.user.*
+*.autosave
+*.qmlc
+*.jsc
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.pdb
+*.ilk
+*.exp
+
+# Qt Creator
+CMakeLists.txt.user*
+.qtc_clangd/
+*.creator.*
+
+# Logs (run-time only - not source)
+logs/run_*.log
+logs/latest.log
+
+# OS detritus
+Thumbs.db
+.DS_Store
+desktop.ini
+ehthumbs.db
+
+# IDE / editor scratch
+.idea/
+.vscode/
+*.swp
+*~
