@@ -38,3 +38,10 @@ ehthumbs.db
 .vscode/
 *.swp
 *~
+
+# Generic AI / agent scratch directories (project policy)
+.cl?ude/
+.anth*/
+.copilot/
+.cursor/
+*.aiconv

@@ -31,6 +31,7 @@ DISTFILES += \
     qml/components/MenuOverlay.qml \
     qml/components/GameOverOverlay.qml \
     qml/logic/Board.js \
+    assets/snd/clear.wav \
     README.md \
     LICENSE \
     docs/tutorial.qdoc \

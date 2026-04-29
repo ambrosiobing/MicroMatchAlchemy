@@ -8,5 +8,6 @@
         <file>qml/components/MenuOverlay.qml</file>
         <file>qml/components/GameOverOverlay.qml</file>
         <file>qml/logic/Board.js</file>
+        <file>assets/snd/clear.wav</file>
     </qresource>
 </RCC>
