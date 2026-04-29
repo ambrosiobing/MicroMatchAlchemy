@@ -110,16 +110,51 @@ Scene {
         }
     }
 
-    // Hint text under the board.
+    // Hint text under the board. Doubles as a transient "reshuffled"
+    // toast for ~2 s after an auto-reshuffle fires.
     Text {
+        id: hintText
         anchors.top: boardArea.bottom
         anchors.topMargin: 14
         anchors.horizontalCenter: parent.horizontalCenter
         font.pixelSize: 13
-        color: "#DDFFEE"
-        text: phase === "idle"    ? ""
-            : phase === "playing" ? "Tap groups of 3 or more"
-            :                       ""
+        color: hintToastActive ? "#FFD166" : "#DDFFEE"
+        text: hintToastActive
+              ? "No moves left on the board - reshuffled!"
+              : phase === "idle"    ? ""
+              : phase === "playing" ? "Tap groups of 3 or more"
+              :                       ""
+    }
+    property bool hintToastActive: false
+    Timer {
+        id: hintToastTimer
+        interval: 2200; repeat: false
+        onTriggered: gameScene.hintToastActive = false
+    }
+
+    // RESTART button - always visible during play. Lets the player bail
+    // out of a hopeless run without sitting through the moves countdown
+    // or quitting the app. Confirms with a one-tap second-press by
+    // briefly flashing yellow; or you can just tap it directly to abort.
+    Rectangle {
+        id: restartBtn
+        anchors.top: boardArea.bottom
+        anchors.topMargin: 14
+        anchors.right: boardArea.right
+        width: 86; height: 28; radius: 14
+        color: "#3F5775"
+        border.color: "white"; border.width: 1
+        visible: gameScene.phase === "playing"
+        opacity: 0.85
+        Text {
+            anchors.centerIn: parent
+            text: "RESTART"; color: "white"
+            font.pixelSize: 11; font.bold: true
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: gameScene.startGame()
+        }
     }
 
     // Optional clear chirp. Same low-latency SoundEffect pattern as
@@ -135,65 +170,24 @@ Scene {
     // -----------------------------------------------------------------
     function startGame() {
         Board.setSeed(Date.now() & 0x7FFFFFFF)
-        board = Board.makeBoard(rows, columns, runeTypes)
+        // Generate boards until we get one with at least one clearable
+        // group. Worst-case probability of a deadlocked fresh board on
+        // 6x6 with 5 rune types is ~1% per Monte Carlo, so the loop
+        // almost always runs once. Capped at 8 attempts to be safe.
+        var fresh = Board.makeBoard(rows, columns, runeTypes)
+        var attempts = 0
+        while (!Board.hasAnyMove(fresh, rows, columns) && attempts < 8) {
+            fresh = Board.makeBoard(rows, columns, runeTypes)
+            ++attempts
+        }
+        board = fresh
         score = 0
         moves = movesMax
         phase = "playing"
+        hintToastActive = false
     }
 
     function selectCell(index) {
         if (phase !== "playing") return
         if (!board || index < 0 || index >= board.length) return
-        var group = Board.findGroup(board, index, rows, columns)
-        if (group.length < 3) {
-            // Visual feedback only - don't spend a move.
-            var tile = boardRepeater.itemAt(index)
-            if (tile) tile.flash()
-            return
-        }
-        // Score, clear, gravity-refill, decrement moves, check end.
-        score += Board.scoreFor(group.length)
-        var next = board.slice()
-        for (var i = 0; i < group.length; ++i) next[group[i]] = -1
-        next = Board.applyGravity(next, rows, columns, runeTypes)
-        board = next
-        moves -= 1
-        clearSfx.stop(); clearSfx.play()
-        checkEnd()
-    }
-
-    function checkEnd() {
-        if (score >= goalScore) {
-            phase = "won"
-            gameWon(score, moves)
-        } else if (moves <= 0) {
-            phase = "lost"
-            gameLost(score)
-        }
-    }
-
-    // -----------------------------------------------------------------
-    // Overlays
-    // -----------------------------------------------------------------
-    MenuOverlay {
-        anchors.fill: parent
-        opacity: gameScene.phase === "idle" ? 1.0 : 0.0
-        visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-        onStartRequested: gameScene.startGame()
-    }
-
-    GameOverOverlay {
-        anchors.fill: parent
-        wonGame:      gameScene.phase === "won"
-        finalScore:   gameScene.score
-        bestScore:    gameScene.bestScore
-        movesLeft:    gameScene.moves
-        bestWinMoves: gameScene.bestWinMoves
-        opacity: (gameScene.phase === "won" || gameScene.phase === "lost") ? 1.0 : 0.0
-        visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-        onRetryRequested: gameScene.startGame()
-        onMenuRequested:  { gameScene.phase = "idle" }
-    }
-}
+        var group =
