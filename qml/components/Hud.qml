@@ -1,4 +1,4 @@
-// Hud.qml - Top score / moves / goal readout.
+// Hud.qml: Top score / moves / goal readout.
 
 import QtQuick
 import Felgo

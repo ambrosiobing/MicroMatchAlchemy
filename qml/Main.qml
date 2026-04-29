@@ -1,7 +1,7 @@
-// Main.qml - MicroMatchAlchemy application root.
+// Main.qml: MicroMatchAlchemy application root.
 //
 // Hosts a Storage singleton (best-score + best-win-moves persistence)
-// and the single GameScene. No EntityManager / no PhysicsWorld - all
+// and the single GameScene. No EntityManager / no PhysicsWorld; all
 // state lives in the GameScene's flat board array.
 
 import Felgo
@@ -37,7 +37,7 @@ GameWindow {
             }
             // Convention: bestWinMoves stores movesLeft (HIGHER = better,
             // i.e. won with the most moves to spare). Do NOT invert this
-            // comparison - flipping to '<' would silently treat slow wins
+            // comparison; flipping to '<' would silently treat slow wins
             // as the new best and overwrite efficient runs.
             var bestMoves = storage.getValue("bestWinMoves") || -1
             if (bestMoves < 0 || movesLeft > bestMoves) {

@@ -1,4 +1,4 @@
-// MenuOverlay.qml - Pre-game splash with PLAY button.
+// MenuOverlay.qml: Pre-game splash with PLAY button.
 
 import QtQuick
 import Felgo

@@ -1,4 +1,4 @@
-// RuneTile.qml - One cell of the 6x6 board.
+// RuneTile.qml: One cell of the 6x6 board.
 //
 // Stateless visual: takes a tileType (0..4 -> colour) and emits a
 // clicked(tileIndex) signal up to the GameScene. A short flash() is
@@ -62,7 +62,7 @@ Item {
         onClicked: root.clicked(root.tileIndex)
     }
 
-    // Behavior on x/y - keep these even though the current Repeater
+    // Behavior on x/y; keep these even though the current Repeater
     // model binds tile position to a fixed (index -> row/column) slot.
     // The Behaviors are scaffolding for the stretch goal "real fall
     // animation" (index by stable tile-id, not slot, so a tile's row

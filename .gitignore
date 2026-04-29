@@ -23,7 +23,7 @@ CMakeLists.txt.user*
 .qtc_clangd/
 *.creator.*
 
-# Logs (run-time only - not source)
+# Logs (run-time only, not source)
 logs/run_*.log
 logs/latest.log
 
@@ -38,10 +38,3 @@ ehthumbs.db
 .vscode/
 *.swp
 *~
-
-# Generic AI / agent scratch directories (project policy)
-.cl?ude/
-.anth*/
-.copilot/
-.cursor/
-*.aiconv

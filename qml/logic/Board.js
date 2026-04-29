@@ -1,10 +1,10 @@
-// Board.js - Pure logic for the MicroMatchAlchemy 6x6 board.
+// Board.js: Pure logic for the MicroMatchAlchemy 6x6 board.
 //
 // Everything random / mutating is exported; the GameScene calls into
 // this module and reassigns its 'board' property after every change so
 // QML bindings see the new array reference. Keeping the rules here
 // (instead of inside GameScene.qml) makes the game unit-testable via
-// QJSEngine - see _extras/tests/tst_Board.cpp.
+// QJSEngine. See _extras/tests/tst_Board.cpp.
 
 .pragma library
 

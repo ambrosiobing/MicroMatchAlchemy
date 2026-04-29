@@ -1,4 +1,4 @@
-// GameScene.qml - MicroMatchAlchemy single playable scene.
+// GameScene.qml: MicroMatchAlchemy single playable scene.
 //
 // Owns:
 //   - 6x6 board as a flat JS array of rune indices (0..4)
@@ -30,7 +30,7 @@ Scene {
     sceneAlignmentY: "center"
 
     // -----------------------------------------------------------------
-    // Public state - rules of the game
+    // Public state; rules of the game
     // -----------------------------------------------------------------
     readonly property int rows:       6
     readonly property int columns:    6
@@ -132,7 +132,7 @@ Scene {
         onTriggered: gameScene.hintToastActive = false
     }
 
-    // RESTART button - always visible during play. Anchored BELOW the
+    // RESTART button; always visible during play. Anchored BELOW the
     // hint text so the two don't fight for the same row. Lets the
     // player bail out of a hopeless run without sitting through the
     // moves countdown or quitting the app.
@@ -157,7 +157,7 @@ Scene {
         }
     }
 
-    // Low-latency game SFX - SoundEffect pre-decodes WAV into memory.
+    // Low-latency game SFX; SoundEffect pre-decodes WAV into memory.
     // For longer/streaming audio (music, MP3) use MediaPlayer instead.
     // Missing file logs one load warning and play() is a silent no-op.
     //   Felgo SoundEffect: https://felgo.com/doc/felgo-soundeffect/

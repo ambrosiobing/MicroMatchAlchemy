@@ -1,4 +1,4 @@
-// GameOverOverlay.qml - Win/Lose summary + retry / menu.
+// GameOverOverlay.qml: Win/Lose summary + retry / menu.
 
 import QtQuick
 import Felgo

@@ -1,4 +1,4 @@
-# MicroMatchAlchemy.pro - qmake project file
+# MicroMatchAlchemy.pro: qmake project file
 
 TEMPLATE = app
 TARGET   = MicroMatchAlchemy

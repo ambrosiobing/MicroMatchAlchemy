@@ -1,4 +1,4 @@
-// main.cpp - Felgo bootstrap for MicroMatchAlchemy (Qt 6 + Felgo SDK).
+// main.cpp: Felgo bootstrap for MicroMatchAlchemy (Qt 6 + Felgo SDK).
 //
 // AUTO-LOGGING: writes <project>/logs/run_TS.log + latest.log; falls back
 // to QStandardPaths::AppDataLocation if source-dir is not writable.

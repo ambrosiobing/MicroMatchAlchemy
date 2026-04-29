@@ -3,7 +3,7 @@
 build a tap-to-clear match-group puzzle with flood-fill grouping,
 column gravity, refill, and a fixed-move score-goal win condition.
 
-This is the most logic-heavy of the five challenge prototypes - and
+This is the most logic-heavy of the five challenge prototypes; and
 the most teachable. Every milestone (board generation, flood-fill,
 gravity, refill, scoring) is a separate runnable checkpoint.
 
@@ -15,7 +15,7 @@ A 6x6 rune-matching puzzle:
 - Tap any group of 3+ connected same-type runes -> they clear.
 - Tiles above fall down; new tiles refill from the top.
 - 12 moves; score goal 800; win if score >= 800 before moves run out.
-- Score formula: `group.length * group.length * 10` - bigger       groups score disproportionately more.
+- Score formula: `group.length * group.length * 10`; bigger       groups score disproportionately more.
 
 ![](screenshots/04-final.png)
 
@@ -24,7 +24,7 @@ A 6x6 rune-matching puzzle:
 - Felgo SDK 4.x installed on top of Qt 6.8 (MinGW or MSVC kit).
 - Qt Creator with a "Felgo Desktop Qt 6.x" kit registered.
 
-## Step 1 - Project root + config.json
+## Step 1: Project root + config.json
 
 `File -> New File or Project -> Felgo Games -> Empty Felgo Project`.
 Name it `MicroMatchAlchemy`. Felgo SDK 4.x requires a `config`.json
@@ -32,7 +32,7 @@ next to the binary at runtime; ship a stub in the project root and
 have `main`.cpp self-heal it to multiple paths so the SDK can find
 it regardless of CWD. Same pattern as the other four prototypes.
 
-## Step 2 - Folder layout
+## Step 2: Folder layout
 
 ```qml
 qml/
@@ -42,7 +42,7 @@ qml/
   logic/Board.js
 ```
 
-## Step 3 - Board.js (pure logic)
+## Step 3: Board.js (pure logic)
 
 Isolate the rules so the game is testable. Index helpers, a seedable
 mulberry32 RNG, board generation, flood-fill, scoring, gravity:
@@ -69,7 +69,7 @@ without spinning up a full QML scene. `_extras/tests/tst_Board`.cpp
 asserts exact-equality on a seeded board, on flood-fill outputs, and
 on the gravity-refill column compaction.
 
-## Step 4 - Flood-fill
+## Step 4: Flood-fill
 
 ```qml
 function neighbours(index, rows, columns) {
@@ -101,7 +101,7 @@ function findGroup(board, startIndex, rows, columns) {
 on a 6x6 grid; the puzzle becomes a paint-by-numbers exercise. 4-way
 adjacency keeps the player thinking about row/column structure.
 
-## Step 5 - Gravity + refill
+## Step 5: Gravity + refill
 
 Per-column compaction. Returns a NEW board (immutable) so QML
 bindings refresh when the GameScene reassigns its `board` property.
@@ -128,7 +128,7 @@ fires the QML binding on every RuneTile's `tileType`. In-place
 mutation would silently miss the binding because the array reference
 hasn't changed.
 
-## Step 6 - RuneTile.qml
+## Step 6: RuneTile.qml
 
 A stateless visual: takes a `tileType` (0..4 -> colour) and emits
 `clicked`(tileIndex) up to the GameScene. Includes a `flash`()
@@ -154,7 +154,7 @@ After `applyGravity` reassigns the board, every RuneTile's bound
 `x` and `y` change to their new column/row positions. The Behavior
 turns each binding update into a smooth animated transition for free.
 
-## Step 7 - The 6x6 grid via Repeater
+## Step 7: The 6x6 grid via Repeater
 
 ```qml
 Repeater {
@@ -171,10 +171,10 @@ Repeater {
 }
 ```
 
-**Checkpoint #1 - 36 random-coloured rounded rectangles render in a**
+**Checkpoint #1: 36 random-coloured rounded rectangles render in a**
 6x6 grid. The grid is non-interactive until the player taps PLAY.
 
-## Step 8 - selectCell - the core mechanic
+## Step 8: selectCell; the core mechanic
 
 ```qml
 function selectCell(index) {
@@ -199,10 +199,10 @@ move, players would memorise tile colours before tapping; the game
 becomes a memory test, not a spatial-reasoning puzzle. Free probes
 keep the input fluid.
 
-**Checkpoint #2 - tapping a 3+ group clears it, the column above**
+**Checkpoint #2: tapping a 3+ group clears it, the column above**
 falls, new runes refill from the top.
 
-## Step 9 - Win / lose
+## Step 9: Win / lose
 
 ```qml
 function checkEnd() {
@@ -211,7 +211,7 @@ function checkEnd() {
 }
 ```
 
-## Step 10 - Best-score + best-moves-on-win persistence
+## Step 10: Best-score + best-moves-on-win persistence
 
 In `Main`.qml's `onGameWon`, store both the highest score AND the
 fewest moves used on a winning run:
@@ -225,7 +225,7 @@ onGameWon: function(finalScore, movesLeft) {
 }
 ```
 
-## Step 11 - Optional clear SFX
+## Step 11: Optional clear SFX
 
 ```qml
 SoundEffect {
@@ -237,11 +237,11 @@ SoundEffect {
 Drop a 16-bit WAV in `assets/snd/` to enable. Missing file logs
 one warning at load and `play()` becomes silent.
 
-## Step 12 - One bug, one fix
+## Step 12: One bug, one fix
 
 First-build issue: tiles teleported to their new positions after a
 clear, no falling animation. Cause: `Behavior on y` was on an
-`Item` without an actual `y` binding - I'd anchored the tile via
+`Item` without an actual `y` binding; I'd anchored the tile via
 `anchors.top: parent.top; anchors.topMargin: row * 48` and
 anchors don't fire `Behavior on y`.
 

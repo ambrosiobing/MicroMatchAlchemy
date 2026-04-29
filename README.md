@@ -17,13 +17,13 @@ your moves run out.
 
 1. Press **PLAY**.
 2. Tap any group of 3 or more **connected** same-coloured runes (4-way
-   neighbours - up / down / left / right, no diagonals).
+   neighbours: up / down / left / right, no diagonals).
 3. The group clears. Score added = `group.length` squared, times 10.
    So a 3-group is +90, a 5-group is +250, an 8-group is +640.
 4. Tiles above the cleared group fall down; new runes refill from the
    top.
 5. Each successful clear costs **one move**. Tapping a group of 1 or 2
-   gives a red flash but **does not** spend a move - go ahead and
+   gives a red flash but **does not** spend a move, so go ahead and
    probe.
 6. **Win** by reaching score >= **800** before moves run out.
 7. **Lose** if moves hit 0 with score below 800.
@@ -70,7 +70,7 @@ MicroMatchAlchemy/
 │   ├── tutorial.qdoc           QDoc bonus tutorial source
 │   ├── tutorial.html           rendered HTML for direct reading
 │   ├── tutorial.md             markdown render
-│   └── screenshots/            (placeholder - capture during build)
+│   └── screenshots/            (5 PNG tutorial captures)
 ├── assets/
 │   ├── img/                    sprite assets (none required)
 │   └── snd/                    optional clear.wav SFX
@@ -90,8 +90,8 @@ group.length        score
        8             640
 ```
 
-The quadratic curve makes large connected blobs strategically valuable
-- chasing two 3-groups (180 total) is worse than waiting for one
+The quadratic curve makes large connected blobs strategically valuable:
+chasing two 3-groups (180 total) is worse than waiting for one
 6-group (360). Eight is the practical maximum on a 6x6 board with 5
 rune types in a typical fresh refill.
 
@@ -113,11 +113,11 @@ rune types in a typical fresh refill.
 
 ## License
 
-Source code: MIT - see `LICENSE`.
+Source code: MIT (see `LICENSE`).
 
 Bundled audio: see `assets/snd/CREDITS.txt` for the third-party
 licence applying to `clear.wav`.
 
 ## Acknowledgements
 
-Flood-fill and gravity-ref
+Flood-fill and gravity-refill pattern
