@@ -132,24 +132,24 @@ Scene {
         onTriggered: gameScene.hintToastActive = false
     }
 
-    // RESTART button - always visible during play. Lets the player bail
-    // out of a hopeless run without sitting through the moves countdown
-    // or quitting the app. Confirms with a one-tap second-press by
-    // briefly flashing yellow; or you can just tap it directly to abort.
+    // RESTART button - always visible during play. Anchored BELOW the
+    // hint text so the two don't fight for the same row. Lets the
+    // player bail out of a hopeless run without sitting through the
+    // moves countdown or quitting the app.
     Rectangle {
         id: restartBtn
-        anchors.top: boardArea.bottom
-        anchors.topMargin: 14
-        anchors.right: boardArea.right
-        width: 86; height: 28; radius: 14
+        anchors.top: hintText.bottom
+        anchors.topMargin: 12
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: 110; height: 32; radius: 16
         color: "#3F5775"
         border.color: "white"; border.width: 1
         visible: gameScene.phase === "playing"
-        opacity: 0.85
+        opacity: 0.9
         Text {
             anchors.centerIn: parent
             text: "RESTART"; color: "white"
-            font.pixelSize: 11; font.bold: true
+            font.pixelSize: 13; font.bold: true
         }
         MouseArea {
             anchors.fill: parent
@@ -190,4 +190,4 @@ Scene {
     function selectCell(index) {
         if (phase !== "playing") return
         if (!board || index < 0 || index >= board.length) return
-        var group =
+        var group = Board.findGroup(bo
