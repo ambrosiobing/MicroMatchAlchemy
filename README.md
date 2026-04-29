@@ -113,10 +113,11 @@ rune types in a typical fresh refill.
 
 ## License
 
-MIT - see `LICENSE`.
+Source code: MIT - see `LICENSE`.
+
+Bundled audio: see `assets/snd/CREDITS.txt` for the third-party
+licence applying to `clear.wav`.
 
 ## Acknowledgements
 
-Flood-fill and gravity-refill patterns referenced from the Felgo
-Match-3 sample app. No assets imported; all visuals are QML
-primitives.
+Flood-fill and gravity-ref

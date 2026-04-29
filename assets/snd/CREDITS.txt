@@ -1,0 +1,30 @@
+Audio attribution
+=================
+
+clear.wav
+---------
+Title       : Board Start
+Author      : el_boss (originally on Freesound)
+Source      : Pixabay
+Source URL  : https://pixabay.com/sound-effects/film-special-effects-board-start-38127/
+Original    : MP3, 0.6 s, "Reset, Capture, Board-game sound effect."
+Format here : Converted to 16-bit PCM WAV for low-latency Qt SoundEffect playback
+              (SoundEffect requires WAV; the original MP3 is preserved in
+              the developer-only _extras/assets/snd/ folder.)
+License     : Pixabay Content License
+              https://pixabay.com/service/license-summary/
+              Free for commercial and non-commercial use, no attribution
+              required - this notice is provided as a courtesy.
+
+The Pixabay Content License grants the user the right to:
+  - download, modify, distribute and use the audio royalty-free
+  - in commercial or non-commercial projects
+  - without crediting the artist or Pixabay (though credit is appreciated)
+
+It does NOT permit:
+  - selling or redistributing the audio in its original form (e.g. as a
+    stock-asset download for resale)
+  - using the audio in a way that suggests endorsement by Pixabay or the
+    artist
+  - using identifiable people, brands, or trademarks featured in the audio
+    in a way that suggests endorsement
