@@ -1,0 +1,260 @@
+/*!
+\page micro-match-alchemy-tutorial.html
+\title Micro Match Alchemy: Build a Felgo Tap-to-Clear Match Puzzle
+\brief A 8-10 hour, step-by-step Felgo / QML tutorial showing how to
+build a tap-to-clear match-group puzzle with flood-fill grouping,
+column gravity, refill, and a fixed-move score-goal win condition.
+
+This is the most logic-heavy of the five challenge prototypes - and
+the most teachable. Every milestone (board generation, flood-fill,
+gravity, refill, scoring) is a separate runnable checkpoint.
+
+\section1 What you will build
+A 6x6 rune-matching puzzle:
+\list
+  \li 6x6 board of runes (5 distinct types, hue-coded).
+  \li Tap any group of 3+ connected same-type runes -> they clear.
+  \li Tiles above fall down; new tiles refill from the top.
+  \li 12 moves; score goal 800; win if score >= 800 before moves run out.
+  \li Score formula: \c{group.length * group.length * 10} - bigger
+      groups score disproportionately more.
+  \li Best score and best moves-remaining-on-win persist.
+\endlist
+
+\image screenshots/04-final.png
+
+\section1 Prerequisites
+\list
+  \li Felgo SDK 4.x installed on top of Qt 6.8 (MinGW or MSVC kit).
+  \li Qt Creator with a "Felgo Desktop Qt 6.x" kit registered.
+  \li Basic QML & JavaScript familiarity.
+\endlist
+
+\section1 Step 1 - Project root + config.json
+\c{File -> New File or Project -> Felgo Games -> Empty Felgo Project}.
+Name it \c MicroMatchAlchemy. Felgo SDK 4.x requires a \c config.json
+next to the binary at runtime; ship a stub in the project root and
+have \c main.cpp self-heal it to multiple paths so the SDK can find
+it regardless of CWD. Same pattern as the other four prototypes.
+
+\section1 Step 2 - Folder layout
+\code
+qml/
+  Main.qml
+  scenes/GameScene.qml
+  components/{RuneTile,Hud,MenuOverlay,GameOverOverlay}.qml
+  logic/Board.js
+\endcode
+
+\section1 Step 3 - Board.js (pure logic)
+Isolate the rules so the game is testable. Index helpers, a seedable
+mulberry32 RNG, board generation, flood-fill, scoring, gravity:
+\code
+.pragma library
+function indexAt(row, col, columns) { return row * columns + col }
+function rowOf(index, columns)      { return Math.floor(index / columns) }
+function columnOf(index, columns)   { return index % columns }
+
+var _seed = 0
+function setSeed(s) { _seed = s | 0 }
+function _rand() { /* mulberry32 - small fast PRNG */ return 0 }
+function newRune(runeTypes) { return Math.floor(_rand() * runeTypes) }
+
+function makeBoard(rows, columns, runeTypes) {
+    var b = new Array(rows * columns)
+    for (var i = 0; i < b.length; ++i) b[i] = newRune(runeTypes)
+    return b
+}
+\endcode
+
+\b{Why pure JS?} Unit tests can drive Board.js via \c QJSEngine
+without spinning up a full QML scene. \c _extras/tests/tst_Board.cpp
+asserts exact-equality on a seeded board, on flood-fill outputs, and
+on the gravity-refill column compaction.
+
+\section1 Step 4 - Flood-fill
+\code
+function neighbours(index, rows, columns) {
+    var r = rowOf(index, columns), c = columnOf(index, columns)
+    var out = []
+    if (r > 0)            out.push(indexAt(r - 1, c, columns))
+    if (r < rows - 1)     out.push(indexAt(r + 1, c, columns))
+    if (c > 0)            out.push(indexAt(r, c - 1, columns))
+    if (c < columns - 1)  out.push(indexAt(r, c + 1, columns))
+    return out
+}
+function findGroup(board, startIndex, rows, columns) {
+    var wanted = board[startIndex]
+    if (wanted < 0) return []
+    var open = [startIndex], seen = {}, group = []
+    while (open.length > 0) {
+        var idx = open.pop()
+        if (seen[idx] || board[idx] !== wanted) continue
+        seen[idx] = true
+        group.push(idx)
+        var ns = neighbours(idx, rows, columns)
+        for (var i = 0; i < ns.length; ++i) open.push(ns[i])
+    }
+    return group
+}
+\endcode
+
+\b{Why 4-neighbour, not 8?} Diagonals make groups too easy to form
+on a 6x6 grid; the puzzle becomes a paint-by-numbers exercise. 4-way
+adjacency keeps the player thinking about row/column structure.
+
+\section1 Step 5 - Gravity + refill
+Per-column compaction. Returns a NEW board (immutable) so QML
+bindings refresh when the GameScene reassigns its \c board property.
+\code
+function applyGravity(board, rows, columns, runeTypes) {
+    var out = board.slice()
+    for (var col = 0; col < columns; ++col) {
+        var kept = []
+        for (var row = rows - 1; row >= 0; --row) {
+            var v = out[indexAt(row, col, columns)]
+            if (v >= 0) kept.push(v)
+        }
+        for (var writeRow = rows - 1; writeRow >= 0; --writeRow) {
+            var next = (kept.length > 0) ? kept.shift() : newRune(runeTypes)
+            out[indexAt(writeRow, col, columns)] = next
+        }
+    }
+    return out
+}
+\endcode
+
+\b{Why a copy, not in-place mutation?} Reassigning \c{board = next}
+fires the QML binding on every RuneTile's \c tileType. In-place
+mutation would silently miss the binding because the array reference
+hasn't changed.
+
+\section1 Step 6 - RuneTile.qml
+A stateless visual: takes a \c tileType (0..4 -> colour) and emits
+\c clicked(tileIndex) up to the GameScene. Includes a \c flash()
+function for the too-small-group feedback path.
+\code
+Item {
+    property int     tileIndex: 0
+    property int     tileType:  0
+    signal clicked(int tileIndex)
+    width: 44; height: 44
+    Rectangle {
+        anchors.fill: parent; anchors.margins: 2; radius: 8
+        color: tileType >= 0 ? palette[tileType] : "transparent"
+    }
+    MouseArea { anchors.fill: parent; onClicked: root.clicked(tileIndex) }
+    Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutQuad } }
+    Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+}
+\endcode
+
+\b{Why \c{Behavior on x/y} instead of an explicit fall animation?}
+After \c applyGravity reassigns the board, every RuneTile's bound
+\c x and \c y change to their new column/row positions. The Behavior
+turns each binding update into a smooth animated transition for free.
+
+\section1 Step 7 - The 6x6 grid via Repeater
+\code
+Repeater {
+    id: boardRepeater
+    model: gameScene.rows * gameScene.columns
+    RuneTile {
+        tileIndex: index
+        tileType:  gameScene.board[index]
+        x: Board.columnOf(index, gameScene.columns) * (tileSize + tileGap)
+        y: Board.rowOf   (index, gameScene.columns) * (tileSize + tileGap)
+        enabled: gameScene.phase === "playing"
+        onClicked: gameScene.selectCell(index)
+    }
+}
+\endcode
+
+\b Checkpoint #1 - 36 random-coloured rounded rectangles render in a
+6x6 grid. The grid is non-interactive until the player taps PLAY.
+
+\section1 Step 8 - selectCell - the core mechanic
+\code
+function selectCell(index) {
+    if (phase !== "playing") return
+    var group = Board.findGroup(board, index, rows, columns)
+    if (group.length < 3) {
+        boardRepeater.itemAt(index).flash()   // red overlay; no move spent
+        return
+    }
+    score += Board.scoreFor(group.length)
+    var next = board.slice()
+    for (var i = 0; i < group.length; ++i) next[group[i]] = -1
+    next = Board.applyGravity(next, rows, columns, runeTypes)
+    board = next
+    moves -= 1
+    checkEnd()
+}
+\endcode
+
+\b{Why no-cost feedback on small groups?} If a wrong tap consumed a
+move, players would memorise tile colours before tapping; the game
+becomes a memory test, not a spatial-reasoning puzzle. Free probes
+keep the input fluid.
+
+\b Checkpoint #2 - tapping a 3+ group clears it, the column above
+falls, new runes refill from the top.
+
+\section1 Step 9 - Win / lose
+\code
+function checkEnd() {
+    if (score >= goalScore) { phase = "won";  gameWon (score, moves) }
+    else if (moves <= 0)    { phase = "lost"; gameLost(score)        }
+}
+\endcode
+
+\section1 Step 10 - Best-score + best-moves-on-win persistence
+In \c Main.qml's \c onGameWon, store both the highest score AND the
+fewest moves used on a winning run:
+\code
+onGameWon: function(finalScore, movesLeft) {
+    var best = storage.getValue("bestScore") || 0
+    if (finalScore > best) storage.setValue("bestScore", finalScore)
+    var bestMoves = storage.getValue("bestWinMoves") || -1
+    if (bestMoves < 0 || movesLeft > bestMoves)
+        storage.setValue("bestWinMoves", movesLeft)
+}
+\endcode
+
+\section1 Step 11 - Optional clear SFX
+\code
+SoundEffect {
+    id: clearSfx
+    source: "../../assets/snd/clear.wav"
+    volume: 0.6
+}
+\endcode
+Drop a 16-bit WAV in \c assets/snd/ to enable. Missing file logs
+one warning at load and \c{play()} becomes silent.
+
+\section1 Step 12 - One bug, one fix
+First-build issue: tiles teleported to their new positions after a
+clear, no falling animation. Cause: \c{Behavior on y} was on an
+\c Item without an actual \c y binding - I'd anchored the tile via
+\c{anchors.top: parent.top; anchors.topMargin: row * 48} and
+anchors don't fire \c{Behavior on y}.
+
+\b{Fix:} use direct \c x / \c y bindings (computed from \c{Board.rowOf}
+/ \c{Board.columnOf}) on every tile. The \c Behavior fires when those
+bindings change.
+
+\b{Lesson:} \c{Behavior on x/y} works on direct property assignments,
+not on anchor side-effects. If a smooth transition disappears after
+an apparent code re-arrangement, that's the first thing to check.
+
+\section1 Final checklist
+\list
+  \li Initial board renders 36 tiles with no missing values.
+  \li Groups smaller than 3 cannot be cleared and do not spend moves.
+  \li Groups of 3+ clear, score, collapse, and refill correctly.
+  \li No column contains -1 (empty cells) after gravity completes.
+  \li Game ends correctly when moves reach 0 or score reaches goal.
+  \li Best score and best-moves-on-win persist across launches.
+  \li \c logs/run_*.log written on every launch.
+\endlist
+*/
