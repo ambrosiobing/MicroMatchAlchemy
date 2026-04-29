@@ -50,6 +50,10 @@ function neighbours(index, rows, columns) {
 function findGroup(board, startIndex, rows, columns) {
     var wanted = board[startIndex]
     if (wanted < 0) return []
+    // Iterative BFS, not recursive: a fully-connected board of one rune
+    // type would recurse 36 deep on the spec 6x6 (and much further on
+    // a hypothetical larger grid). Iterative keeps the JS stack out of
+    // the picture and lets the algorithm scale linearly.
     var open  = [ startIndex ]
     var seen  = {}
     var group = []
@@ -65,7 +69,11 @@ function findGroup(board, startIndex, rows, columns) {
 }
 
 // --- score -----------------------------------------------------------
-// group.length squared rewards bigger chains: 3 -> 90, 5 -> 250, 8 -> 640.
+// Quadratic-in-length rewards strategic patience: 3 -> 90, 5 -> 250,
+// 8 -> 640. A linear curve (length * 30) makes every 3-group worth
+// clearing on sight, eliminating the only strategic verb the game
+// has ("set up bigger blobs"). Don't flatten this without redesigning
+// the level around it.
 function scoreFor(groupLength) { return groupLength * groupLength * 10 }
 
 // --- gravity + refill ------------------------------------------------
@@ -90,16 +98,4 @@ function applyGravity(board, rows, columns, runeTypes) {
 }
 
 // --- validation ------------------------------------------------------
-// Returns true if the current board has at least one clearable group.
-// Used so the scene can detect a deadlock and trigger a soft-reshuffle
-// (stretch goal; the 12-move limit otherwise prevents infinite stalls).
-function hasAnyMove(board, rows, columns) {
-    var seen = {}
-    for (var i = 0; i < board.length; ++i) {
-        if (seen[i] || board[i] < 0) continue
-        var g = findGroup(board, i, rows, columns)
-        for (var k = 0; k < g.length; ++k) seen[g[k]] = true
-        if (g.length >= 3) return true
-    }
-    return false
-}
+// Returns true if the current board has at lea

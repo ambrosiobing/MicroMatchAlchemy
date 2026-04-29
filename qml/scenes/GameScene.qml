@@ -157,8 +157,11 @@ Scene {
         }
     }
 
-    // Optional clear chirp. Same low-latency SoundEffect pattern as
-    // MemoryGarden; missing file logs a single warning and is silent.
+    // Low-latency game SFX - SoundEffect pre-decodes WAV into memory.
+    // For longer/streaming audio (music, MP3) use MediaPlayer instead.
+    // Missing file logs one load warning and play() is a silent no-op.
+    //   Felgo SoundEffect: https://felgo.com/doc/felgo-soundeffect/
+    //   Qt SoundEffect:    https://doc.qt.io/qt-6/qml-qtmultimedia-soundeffect.html
     SoundEffect {
         id: clearSfx
         source: Qt.resolvedUrl("../../assets/snd/clear.wav")
@@ -183,11 +186,4 @@ Scene {
         board = fresh
         score = 0
         moves = movesMax
-        phase = "playing"
-        hintToastActive = false
-    }
-
-    function selectCell(index) {
-        if (phase !== "playing") return
-        if (!board || index < 0 || index >= board.length) return
-        var group = Board.findGroup(bo
+        phas
