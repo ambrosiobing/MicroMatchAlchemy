@@ -46,11 +46,167 @@ the other four prototypes.
 Isolate the rules so the game is testable. Index helpers, a seedable
 mulberry32 RNG (random number generator), board generation,
 flood-fill, scoring, gravity:
-\code
-.pragma library
+<pre><code>.pragma library
 function indexAt(row, col, columns) { return row * columns + col }
 function rowOf(index, columns)      { return Math.floor(index / columns) }
 function columnOf(index, columns)   { return index % columns }
 
-<p>var _seed = 0 function setSeed(s) { _seed = s | 0 } function _rand() { /* mulberry32: small fast PRNG (pseudo-random number generator)</p>
+<p>var _seed = 0 function setSeed(s) { _seed = s | 0 } function _rand() { /* mulberry32: small fast PRNG (pseudo-random number generator) */ return 0 } function newRune(runeTypes) { return Math.floor(_rand() * runeTypes) }</p>
+
+<p>function makeBoard(rows, columns, runeTypes) {     var b = new Array(rows * columns)     for (var i = 0; i &lt; b.length; ++i) b[i] = newRune(runeTypes)     return b } </code></pre></p>
+
+<p><strong>Why pure JS?</strong> Unit tests can drive Board.js via <code>QJSEngine</code> without spinning up a full QML scene. <code>_extras/tests/tst_Board</code>.cpp asserts exact-equality on a seeded board, on flood-fill outputs, and on the gravity-refill column compaction.</p>
+
+<h2>Step 4: Flood-fill</h2>
+<pre><code>function neighbours(index, rows, columns) {
+    var r = rowOf(index, columns), c = columnOf(index, columns)
+    var out = []
+    if (r &gt; 0)            out.push(indexAt(r - 1, c, columns))
+    if (r &lt; rows - 1)     out.push(indexAt(r + 1, c, columns))
+    if (c &gt; 0)            out.push(indexAt(r, c - 1, columns))
+    if (c &lt; columns - 1)  out.push(indexAt(r, c + 1, columns))
+    return out
+}
+function findGroup(board, startIndex, rows, columns) {
+    var wanted = board[startIndex]
+    if (wanted &lt; 0) return []
+    var open = [startIndex], seen = {}, group = []
+    while (open.length &gt; 0) {
+        var idx = open.pop()
+        if (seen[idx] || board[idx] !== wanted) continue
+        seen[idx] = true
+        group.push(idx)
+        var ns = neighbours(idx, rows, columns)
+        for (var i = 0; i &lt; ns.length; ++i) open.push(ns[i])
+    }
+    return group
+}
+</code></pre>
+
+<p><strong>Why 4-neighbour, not 8?</strong> Diagonals make groups too easy to form on a 6x6 grid; the puzzle becomes a paint-by-numbers exercise. 4-way adjacency keeps the player thinking about row/column structure.</p>
+
+<h2>Step 5: Gravity + refill</h2>
+Per-column compaction. Returns a NEW board (immutable) so QML
+bindings refresh when the GameScene reassigns its <code>board</code> property.
+<pre><code>function applyGravity(board, rows, columns, runeTypes) {
+    var out = board.slice()
+    for (var col = 0; col &lt; columns; ++col) {
+        var kept = []
+        for (var row = rows - 1; row &gt;= 0; --row) {
+            var v = out[indexAt(row, col, columns)]
+            if (v &gt;= 0) kept.push(v)
+        }
+        for (var writeRow = rows - 1; writeRow &gt;= 0; --writeRow) {
+            var next = (kept.length &gt; 0) ? kept.shift() : newRune(runeTypes)
+            out[indexAt(writeRow, col, columns)] = next
+        }
+    }
+    return out
+}
+</code></pre>
+
+<p><strong>Why a copy, not in-place mutation?</strong> Reassigning <code>board = next</code> fires the QML binding on every RuneTile's <code>tileType</code>. In-place mutation would silently miss the binding because the array reference hasn't changed.</p>
+
+<h2>Step 6: RuneTile.qml</h2>
+A stateless visual: takes a <code>tileType</code> (0..4 -> colour) and emits
+<code>clicked</code>(tileIndex) up to the GameScene. Includes a <code>flash</code>()
+function for the too-small-group feedback path.
+<pre><code>Item {
+    property int     tileIndex: 0
+    property int     tileType:  0
+    signal clicked(int tileIndex)
+    width: 44; height: 44
+    Rectangle {
+        anchors.fill: parent; anchors.margins: 2; radius: 8
+        color: tileType &gt;= 0 ? palette[tileType] : &quot;transparent&quot;
+    }
+    MouseArea { anchors.fill: parent; onClicked: root.clicked(tileIndex) }
+    Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutQuad } }
+    Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+}
+</code></pre>
+
+<p><strong>Why <code>Behavior on x/y&lt;/strong&gt; instead of an explicit fall animation?</code> After <code>applyGravity</code> reassigns the board, every RuneTile's bound <code>x</code> and <code>y</code> change to their new column/row positions. The Behavior turns each binding update into a smooth animated transition for free.</p>
+
+<h2>Step 7: The 6x6 grid via Repeater</h2>
+<pre><code>Repeater {
+    id: boardRepeater
+    model: gameScene.rows * gameScene.columns
+    RuneTile {
+        tileIndex: index
+        tileType:  gameScene.board[index]
+        x: Board.columnOf(index, gameScene.columns) * (tileSize + tileGap)
+        y: Board.rowOf   (index, gameScene.columns) * (tileSize + tileGap)
+        enabled: gameScene.phase === &quot;playing&quot;
+        onClicked: gameScene.selectCell(index)
+    }
+}
+</code></pre>
+
+<p><strong>Checkpoint #1: 36 random-coloured rounded rectangles render in a</strong> 6x6 grid. The grid is non-interactive until the player taps PLAY.</p>
+
+<h2>Step 8: selectCell; the core mechanic</h2>
+<pre><code>function selectCell(index) {
+    if (phase !== &quot;playing&quot;) return
+    var group = Board.findGroup(board, index, rows, columns)
+    if (group.length &lt; 3) {
+        boardRepeater.itemAt(index).flash()   // red overlay; no move spent
+        return
+    }
+    score += Board.scoreFor(group.length)
+    var next = board.slice()
+    for (var i = 0; i &lt; group.length; ++i) next[group[i]] = -1
+    next = Board.applyGravity(next, rows, columns, runeTypes)
+    board = next
+    moves -= 1
+    checkEnd()
+}
+</code></pre>
+
+<p><strong>Why no-cost feedback on small groups?</strong> If a wrong tap consumed a move, players would memorise tile colours before tapping; the game becomes a memory test, not a spatial-reasoning puzzle. Free probes keep the input fluid.</p>
+
+<p><strong>Checkpoint #2: tapping a 3+ group clears it, the column above</strong> falls, new runes refill from the top.</p>
+
+<h2>Step 9: Win / lose</h2>
+<pre><code>function checkEnd() {
+    if (score &gt;= goalScore) { phase = &quot;won&quot;;  gameWon (score, moves) }
+    else if (moves &lt;= 0)    { phase = &quot;lost&quot;; gameLost(score)        }
+}
+</code></pre>
+
+<h2>Step 10: Best-score + best-moves-on-win persistence</h2>
+In <code>Main</code>.qml's <code>onGameWon</code>, store both the highest score AND the
+fewest moves used on a winning run:
+<pre><code>onGameWon: function(finalScore, movesLeft) {
+    var best = storage.getValue(&quot;bestScore&quot;) || 0
+    if (finalScore &gt; best) storage.setValue(&quot;bestScore&quot;, finalScore)
+    var bestMoves = storage.getValue(&quot;bestWinMoves&quot;) || -1
+    if (bestMoves &lt; 0 || movesLeft &gt; bestMoves)
+        storage.setValue(&quot;bestWinMoves&quot;, movesLeft)
+}
+</code></pre>
+
+<h2>Step 11: Optional clear SFX</h2>
+<pre><code>SoundEffect {
+    id: clearSfx
+    source: &quot;../../assets/snd/clear.wav&quot;
+    volume: 0.6
+}
+</code></pre>
+Drop a 16-bit WAV in <code>assets/snd/</code> to enable. Missing file logs
+one warning at load and <code>play()</code> becomes silent.
+
+<h2>Step 12: One bug, one fix</h2>
+First-build issue: tiles teleported to their new positions after a
+clear, no falling animation. Cause: <code>Behavior on y</code> was on an
+<code>Item</code> without an actual <code>y</code> binding; I'd anchored the tile via
+<code>anchors.top: parent.top; anchors.topMargin: row * 48</code> and
+anchors don't fire <code>Behavior on y</code>.
+
+<p><strong>Fix:</strong> use direct <code>x</code> / <code>y</code> bindings (computed from <code>Board.rowOf</code> / <code>Board.columnOf</code>) on every tile. The <code>Behavior</code> fires when those bindings change.</p>
+
+<p><strong>Lesson:</strong> <code>Behavior on x/y</code> works on direct property assignments, not on anchor side-effects. If a smooth transition disappears after an apparent code re-arrangement, that's the first thing to check.</p>
+
+<h2>Final checklist</h2>
+<ul><li>Initial board renders 36 tiles with no missing values.</li><li>Groups smaller than 3 cannot be cleared and do not spend moves.</li><li>Groups of 3+ clear, score, collapse, and refill correctly.</li><li>No column contains -1 (empty cells) after gravity completes.</li><li>Game ends correctly when moves reach 0 or score reaches goal.</li><li>Best score and best-moves-on-win persist across launches.</li></ul>
 </body></html>

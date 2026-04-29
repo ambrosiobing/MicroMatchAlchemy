@@ -257,4 +257,9 @@ an apparent code re-arrangement, that's the first thing to check.
   \li Initial board renders 36 tiles with no missing values.
   \li Groups smaller than 3 cannot be cleared and do not spend moves.
   \li Groups of 3+ clear, score, collapse, and refill correctly.
-  \li No column contains -1 (empty cells) a
+  \li No column contains -1 (empty cells) after gravity completes.
+  \li Game ends correctly when moves reach 0 or score reaches goal.
+  \li Best score and best-moves-on-win persist across launches.
+  \li \c logs/run_*.log written on every launch.
+\endlist
+*/
