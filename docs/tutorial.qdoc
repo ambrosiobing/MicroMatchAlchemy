@@ -10,6 +10,8 @@ This is the most logic-heavy of the five challenge prototypes; and
 the most teachable. Every milestone (board generation, flood-fill,
 gravity, refill, scoring) is a separate runnable checkpoint.
 
+\image screenshots/02-board.png
+
 \section1 What you will build
 A 6x6 rune-matching puzzle:
 \list
@@ -22,7 +24,22 @@ A 6x6 rune-matching puzzle:
   \li Best score and best moves-remaining-on-win persist.
 \endlist
 
-\image screenshots/04-final.png
+\section1 High-level game loop
+The whole game is a four-state machine. The player taps PLAY to
+leave the menu; tapping qualifying groups stays in \c playing until
+either the score goal is met (\c won) or the move budget runs out
+(\c lost). RESTART returns to a fresh \c playing board.
+
+\mermaid
+stateDiagram-v2
+    [*] --> idle
+    idle --> playing : tap PLAY
+    playing --> playing : tap group of 3+
+    playing --> won : score >= goalScore
+    playing --> lost : moves == 0
+    won --> playing : tap RESTART
+    lost --> playing : tap RESTART
+\endmermaid
 
 \section1 Prerequisites
 \list
@@ -40,6 +57,11 @@ next to the binary at runtime; ship a stub in the project root and
 have \c main.cpp self-heal it to multiple paths so the SDK can find
 it regardless of CWD (current working directory). Same pattern as
 the other four prototypes.
+
+The first launch shows the title menu. PLAY enters \c playing;
+QUIT closes the app.
+
+\image screenshots/01-menu.png
 
 \section1 Step 2: Folder layout
 \code
@@ -78,6 +100,27 @@ asserts exact-equality on a seeded board, on flood-fill outputs, and
 on the gravity-refill column compaction.
 
 \section1 Step 4: Flood-fill
+The connected-group lookup is a textbook iterative breadth-/depth-
+first search over 4-connected cells. Pseudocode first, then the
+QML/JS:
+
+\code
+procedure findGroup(board, startIndex, rows, columns):
+    wanted := board[startIndex]
+    if wanted < 0: return empty list
+    open  := stack containing startIndex
+    seen  := empty set
+    group := empty list
+    while open is not empty:
+        idx := pop(open)
+        if idx in seen or board[idx] != wanted: continue
+        add idx to seen
+        append idx to group
+        for each n in neighbours(idx, rows, columns):    // 4-way
+            push n onto open
+    return group
+\endcode
+
 \code
 function neighbours(index, rows, columns) {
     var r = rowOf(index, columns), c = columnOf(index, columns)
@@ -111,6 +154,20 @@ adjacency keeps the player thinking about row/column structure.
 \section1 Step 5: Gravity + refill
 Per-column compaction. Returns a NEW board (immutable) so QML
 bindings refresh when the GameScene reassigns its \c board property.
+
+Visualisation of one column. Cleared cells are \c{-1}; gravity pulls
+survivors down, then fresh runes fill the top:
+
+\code
+before clear   after clear    after gravity     refill (top)
+   A              A              A                 ?
+   B             -1              C                 ?
+   C              C              D                 A
+   D              D              E                 C
+   E              E              ?                 D
+   B             -1              ?                 E
+\endcode
+
 \code
 function applyGravity(board, rows, columns, runeTypes) {
     var out = board.slice()
@@ -179,6 +236,23 @@ Repeater {
 6x6 grid. The grid is non-interactive until the player taps PLAY.
 
 \section1 Step 8: selectCell; the core mechanic
+The full per-tap pipeline. Every player tap walks this flowchart:
+
+\mermaid
+flowchart TD
+    Tap[Player taps tile] --> Find[Board.findGroup<br/>flood-fill from tap]
+    Find --> Size{group.length<br/>>= 3?}
+    Size -- no --> Flash[RuneTile.flash<br/>red overlay, no move spent]
+    Size -- yes --> Score[score += length^2 * 10]
+    Score --> Mark[mark group cells as -1]
+    Mark --> Gravity[Board.applyGravity<br/>compact + refill columns]
+    Gravity --> Dec[moves -= 1]
+    Dec --> End{score >= goal?<br/>moves == 0?}
+    End -- score met --> Won[phase = won, emit gameWon]
+    End -- moves out --> Lost[phase = lost, emit gameLost]
+    End -- neither --> Tap
+\endmermaid
+
 \code
 function selectCell(index) {
     if (phase !== "playing") return
@@ -205,6 +279,8 @@ keep the input fluid.
 \b Checkpoint #2: tapping a 3+ group clears it, the column above
 falls, new runes refill from the top.
 
+\image screenshots/03-clear.png
+
 \section1 Step 9: Win / lose
 \code
 function checkEnd() {
@@ -212,6 +288,11 @@ function checkEnd() {
     else if (moves <= 0)    { phase = "lost"; gameLost(score)        }
 }
 \endcode
+
+The GameOverOverlay reads \c phase and shows either the win or the
+lose copy, plus a TRY AGAIN button that calls \c startGame().
+
+\image screenshots/05-gameover.png
 
 \section1 Step 10: Best-score + best-moves-on-win persistence
 In \c Main.qml's \c onGameWon, store both the highest score AND the
@@ -225,6 +306,22 @@ onGameWon: function(finalScore, movesLeft) {
         storage.setValue("bestWinMoves", movesLeft)
 }
 \endcode
+
+\section1 Bonus: deadlock detection and auto-reshuffle
+After every gravity-refill, the GameScene calls \c{Board.hasAnyMove}.
+If no group of 3+ exists anywhere on the board the player is stuck
+through no fault of their own; the scene regenerates the board and
+shows a transient toast so the player understands what happened.
+
+\code
+procedure afterClear():
+    if not Board.hasAnyMove(board, rows, columns):
+        board := Board.makeBoard(rows, columns, runeTypes)
+        hintToastActive := true        // shows for 2.2 s
+        startHintToastTimer()
+\endcode
+
+\image screenshots/04-toast.png
 
 \section1 Step 11: Optional clear SFX
 \code
