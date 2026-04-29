@@ -23,7 +23,7 @@ Scene {
     id: gameScene
 
     // 6 cols x 44 px tiles + 5 gaps + 2x6 margins =~ 290; round to 320 then
-    // pad scene to 360 for HUD breathing.
+    // pad scene to 360 for HUD (heads-up display) breathing room.
     width:  360
     height: 540
     sceneAlignmentX: "center"
@@ -157,9 +157,12 @@ Scene {
         }
     }
 
-    // Low-latency game SFX; SoundEffect pre-decodes WAV into memory.
-    // For longer/streaming audio (music, MP3) use MediaPlayer instead.
-    // Missing file logs one load warning and play() is a silent no-op.
+    // Low-latency game SFX (sound effects). Qt's SoundEffect element
+    // pre-decodes a WAV (Waveform Audio File) into memory so play()
+    // returns instantly. For longer or streaming audio (background
+    // music, MP3 / OGG) use MediaPlayer instead. If the source file
+    // is missing, SoundEffect logs one load warning and play() becomes
+    // a silent no-op; gameplay is unaffected.
     //   Felgo SoundEffect: https://felgo.com/doc/felgo-soundeffect/
     //   Qt SoundEffect:    https://doc.qt.io/qt-6/qml-qtmultimedia-soundeffect.html
     SoundEffect {
@@ -179,11 +182,4 @@ Scene {
         // almost always runs once. Capped at 8 attempts to be safe.
         var fresh = Board.makeBoard(rows, columns, runeTypes)
         var attempts = 0
-        while (!Board.hasAnyMove(fresh, rows, columns) && attempts < 8) {
-            fresh = Board.makeBoard(rows, columns, runeTypes)
-            ++attempts
-        }
-        board = fresh
-        score = 0
-        moves = movesMax
-        phas
+        while (!Board.hasAnyMove(fresh, r

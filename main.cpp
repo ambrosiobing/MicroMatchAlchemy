@@ -1,10 +1,13 @@
-// main.cpp: Felgo bootstrap for MicroMatchAlchemy (Qt 6 + Felgo SDK).
+// main.cpp: Felgo bootstrap for MicroMatchAlchemy
+// (Qt 6 + Felgo SDK, "Software Development Kit").
 //
-// AUTO-LOGGING: writes <project>/logs/run_TS.log + latest.log; falls back
-// to QStandardPaths::AppDataLocation if source-dir is not writable.
+// AUTO-LOGGING: writes <project>/logs/run_TS.log + latest.log; falls
+// back to QStandardPaths::AppDataLocation (the OS per-user
+// Application Data folder) if the source directory is not writable.
 //
-// CONFIG.JSON SELF-HEAL: writes a stub to multiple plausible locations so
-// Felgo SDK 4.x can find it regardless of CWD.
+// CONFIG.JSON SELF-HEAL: writes a stub to multiple plausible locations
+// so Felgo SDK 4.x can find it regardless of CWD (current working
+// directory, i.e. the directory the process was launched from).
 
 #include <QApplication>
 #include <FelgoApplication>
@@ -198,8 +201,4 @@ int main(int argc, char *argv[])
     felgo.setPreservePlatformFonts(true);
     engine.load(QUrl(felgo.mainQmlFileName()));
 
-    const int rc = app.exec();
-    qInfo("MicroMatchAlchemy exited with code %d", rc);
-    if (g_logStream.device()) { g_logStream.flush(); g_logFile.close(); }
-    return rc;
-}
+    const i

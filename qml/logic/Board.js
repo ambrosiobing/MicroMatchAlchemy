@@ -14,8 +14,9 @@ function rowOf(index, columns)      { return Math.floor(index / columns) }
 function columnOf(index, columns)   { return index % columns }
 
 // --- random helpers --------------------------------------------------
-// Seedable mulberry32 so unit tests can pin the rune stream and assert
-// exact-equality on generated boards.
+// Seedable mulberry32 PRNG (pseudo-random number generator) so unit
+// tests can pin the rune stream and assert exact-equality on
+// generated boards.
 var _seed = 0
 function setSeed(s) { _seed = s | 0 }
 function _rand() {
@@ -50,10 +51,11 @@ function neighbours(index, rows, columns) {
 function findGroup(board, startIndex, rows, columns) {
     var wanted = board[startIndex]
     if (wanted < 0) return []
-    // Iterative BFS, not recursive: a fully-connected board of one rune
-    // type would recurse 36 deep on the spec 6x6 (and much further on
-    // a hypothetical larger grid). Iterative keeps the JS stack out of
-    // the picture and lets the algorithm scale linearly.
+    // Iterative BFS (breadth-first search), not recursive: a fully-
+    // connected board of one rune type would recurse 36 deep on the
+    // spec 6x6 (and much further on a hypothetical larger grid).
+    // Iterative keeps the JS (JavaScript) call stack out of the
+    // picture and lets the algorithm scale linearly.
     var open  = [ startIndex ]
     var seen  = {}
     var group = []
@@ -97,5 +99,4 @@ function applyGravity(board, rows, columns, runeTypes) {
     return out
 }
 
-// --- validation ------------------------------------------------------
-// Returns true if the current board has at lea
+// --- validation ------------

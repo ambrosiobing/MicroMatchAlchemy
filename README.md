@@ -7,7 +7,7 @@ your moves run out.
 
 | | |
 |---|---|
-| Engine     | Felgo SDK 4.x on Qt 6.8.3 (MinGW 64-bit)              |
+| Engine     | Felgo SDK (Software Development Kit) 4.x on Qt 6.8.3, MinGW (Minimalist GNU for Windows) 64-bit compiler |
 | Resolution | 360 x 540 logical (auto-fits desktop and mobile)      |
 | Platforms  | Desktop tested (Windows 11). Mobile-shaped layout     |
 | Genre      | Tap-to-clear match-group puzzle                       |
@@ -45,7 +45,8 @@ the most recent log is kept at `<project>/logs/latest.log`.
 
 ### Felgo Live (Hot Reload)
 Open `MicroMatchAlchemy.pro` in the Felgo Live client; saved QML
-changes propagate to the running app without a full rebuild.
+(Qt Modeling Language) changes propagate to the running app without
+a full rebuild.
 
 ## Project layout
 
@@ -61,7 +62,7 @@ MicroMatchAlchemy/
 │   │   └── GameScene.qml       4-state machine + tap routing
 │   ├── components/
 │   │   ├── RuneTile.qml        one cell of the 6x6 grid
-│   │   ├── Hud.qml             score / moves / goal readout
+│   │   ├── Hud.qml             HUD (heads-up display) score / moves / goal
 │   │   ├── MenuOverlay.qml     pre-game splash + PLAY button
 │   │   └── GameOverOverlay.qml win / lose summary + RETRY / MENU
 │   └── logic/
@@ -73,7 +74,7 @@ MicroMatchAlchemy/
 │   └── screenshots/            (5 PNG tutorial captures)
 ├── assets/
 │   ├── img/                    sprite assets (none required)
-│   └── snd/                    optional clear.wav SFX
+│   └── snd/                    optional clear.wav SFX (sound effect)
 ├── README.md / LICENSE / .gitignore
 └── logs/                       run logs auto-created on every launch
 ```
@@ -115,9 +116,4 @@ rune types in a typical fresh refill.
 
 Source code: MIT (see `LICENSE`).
 
-Bundled audio: see `assets/snd/CREDITS.txt` for the third-party
-licence applying to `clear.wav`.
-
-## Acknowledgements
-
-Flood-fill and gravity-refill pattern
+Bundled audio: see `assets/snd/CREDITS.txt` for the 

@@ -1,9 +1,10 @@
 /*!
 \page micro-match-alchemy-tutorial.html
 \title Micro Match Alchemy: Build a Felgo Tap-to-Clear Match Puzzle
-\brief A 8-10 hour, step-by-step Felgo / QML tutorial showing how to
-build a tap-to-clear match-group puzzle with flood-fill grouping,
-column gravity, refill, and a fixed-move score-goal win condition.
+\brief A 8-10 hour, step-by-step Felgo / QML (Qt Modeling Language)
+tutorial showing how to build a tap-to-clear match-group puzzle with
+flood-fill grouping, column gravity, refill, and a fixed-move
+score-goal win condition.
 
 This is the most logic-heavy of the five challenge prototypes; and
 the most teachable. Every milestone (board generation, flood-fill,
@@ -25,9 +26,11 @@ A 6x6 rune-matching puzzle:
 
 \section1 Prerequisites
 \list
-  \li Felgo SDK 4.x installed on top of Qt 6.8 (MinGW or MSVC kit).
+  \li Felgo SDK (Software Development Kit) 4.x installed on top of
+      Qt 6.8 with MinGW (Minimalist GNU for Windows) or MSVC
+      (Microsoft Visual C++) compiler kit.
   \li Qt Creator with a "Felgo Desktop Qt 6.x" kit registered.
-  \li Basic QML & JavaScript familiarity.
+  \li Basic QML & JavaScript (JS) familiarity.
 \endlist
 
 \section1 Step 1: Project root + config.json
@@ -35,7 +38,8 @@ A 6x6 rune-matching puzzle:
 Name it \c MicroMatchAlchemy. Felgo SDK 4.x requires a \c config.json
 next to the binary at runtime; ship a stub in the project root and
 have \c main.cpp self-heal it to multiple paths so the SDK can find
-it regardless of CWD. Same pattern as the other four prototypes.
+it regardless of CWD (current working directory). Same pattern as
+the other four prototypes.
 
 \section1 Step 2: Folder layout
 \code
@@ -48,7 +52,8 @@ qml/
 
 \section1 Step 3: Board.js (pure logic)
 Isolate the rules so the game is testable. Index helpers, a seedable
-mulberry32 RNG, board generation, flood-fill, scoring, gravity:
+mulberry32 RNG (random number generator), board generation,
+flood-fill, scoring, gravity:
 \code
 .pragma library
 function indexAt(row, col, columns) { return row * columns + col }
@@ -57,7 +62,7 @@ function columnOf(index, columns)   { return index % columns }
 
 var _seed = 0
 function setSeed(s) { _seed = s | 0 }
-function _rand() { /* mulberry32 - small fast PRNG */ return 0 }
+function _rand() { /* mulberry32: small fast PRNG (pseudo-random number generator) */ return 0 }
 function newRune(runeTypes) { return Math.floor(_rand() * runeTypes) }
 
 function makeBoard(rows, columns, runeTypes) {
@@ -252,9 +257,4 @@ an apparent code re-arrangement, that's the first thing to check.
   \li Initial board renders 36 tiles with no missing values.
   \li Groups smaller than 3 cannot be cleared and do not spend moves.
   \li Groups of 3+ clear, score, collapse, and refill correctly.
-  \li No column contains -1 (empty cells) after gravity completes.
-  \li Game ends correctly when moves reach 0 or score reaches goal.
-  \li Best score and best-moves-on-win persist across launches.
-  \li \c logs/run_*.log written on every launch.
-\endlist
-*/
+  \li No column contains -1 (empty cells) a
