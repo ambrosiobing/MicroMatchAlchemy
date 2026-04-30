@@ -48,6 +48,22 @@ Open `MicroMatchAlchemy.pro` in the Felgo Live client; saved QML
 (Qt Modeling Language) changes propagate to the running app without
 a full rebuild.
 
+## Final tested build
+
+Last clean run from a fresh checkout:
+
+| | |
+|---|---|
+| Date tested        | <!-- YYYY-MM-DD --> |
+| Felgo SDK          | 4.x (exact version: <!-- e.g. 4.6.0 -->) |
+| Qt                 | 6.8.3 |
+| Compiler kit       | MinGW 64-bit (`Felgo_SDK_Desktop_Qt_6_8_3_MinGW_64_bit`) |
+| Operating system   | Windows 11 |
+| Launch path        | Qt Creator -> Run (green play button) |
+| Result             | Menu loads, PLAY enters board, taps clear groups, gravity + refill animate, win/lose triggers, RESTART works, best-score and best-moves persist across relaunch |
+| Audio              | `clear.wav` plays on group clear (silent if file omitted) |
+| Log written to     | `logs/run_<timestamp>.log` + `logs/latest.log` |
+
 ## Project layout
 
 ```

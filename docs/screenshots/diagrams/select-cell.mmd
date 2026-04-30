@@ -1,0 +1,12 @@
+flowchart TD
+    Tap[Player taps tile] --> Find[Board.findGroup<br/>flood-fill from tap]
+    Find --> Size{group.length<br/>>= 3?}
+    Size -- no --> Flash[RuneTile.flash<br/>red overlay, no move spent]
+    Size -- yes --> Score[score += length^2 * 10]
+    Score --> Mark[mark group cells as -1]
+    Mark --> Gravity[Board.applyGravity<br/>compact + refill columns]
+    Gravity --> Dec[moves -= 1]
+    Dec --> End{score >= goal?<br/>moves == 0?}
+    End -- score met --> Won[phase = won, emit gameWon]
+    End -- moves out --> Lost[phase = lost, emit gameLost]
+    End -- neither --> Tap

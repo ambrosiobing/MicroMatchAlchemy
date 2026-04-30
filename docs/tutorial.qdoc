@@ -29,16 +29,7 @@ leave the menu; tapping qualifying groups stays in \c playing until
 either the score goal is met (\c won) or the move budget runs out
 (\c lost). RESTART returns to a fresh \c playing board.
 
-\mermaid
-stateDiagram-v2
-    [*] --> idle
-    idle --> playing : tap PLAY
-    playing --> playing : tap group of 3+
-    playing --> won : score >= goalScore
-    playing --> lost : moves == 0
-    won --> playing : tap RESTART
-    lost --> playing : tap RESTART
-\endmermaid
+\image screenshots/diagrams/state-machine.png
 
 \section1 Prerequisites
 \list
@@ -237,20 +228,7 @@ Repeater {
 \section1 Step 8: selectCell; the core mechanic
 The full per-tap pipeline. Every player tap walks this flowchart:
 
-\mermaid
-flowchart TD
-    Tap[Player taps tile] --> Find[Board.findGroup<br/>flood-fill from tap]
-    Find --> Size{group.length<br/>>= 3?}
-    Size -- no --> Flash[RuneTile.flash<br/>red overlay, no move spent]
-    Size -- yes --> Score[score += length^2 * 10]
-    Score --> Mark[mark group cells as -1]
-    Mark --> Gravity[Board.applyGravity<br/>compact + refill columns]
-    Gravity --> Dec[moves -= 1]
-    Dec --> End{score >= goal?<br/>moves == 0?}
-    End -- score met --> Won[phase = won, emit gameWon]
-    End -- moves out --> Lost[phase = lost, emit gameLost]
-    End -- neither --> Tap
-\endmermaid
+\image screenshots/diagrams/select-cell.png
 
 \code
 function selectCell(index) {

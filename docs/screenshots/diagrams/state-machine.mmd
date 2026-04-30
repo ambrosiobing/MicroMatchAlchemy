@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> idle
+    idle --> playing : tap PLAY
+    playing --> playing : tap group of 3+
+    playing --> won : score >= goalScore
+    playing --> lost : moves == 0
+    won --> playing : tap RESTART
+    lost --> playing : tap RESTART

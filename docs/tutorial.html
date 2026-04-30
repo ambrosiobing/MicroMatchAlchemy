@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><title>Micro Match Alchemy: Build a Felgo Tap-to-Clear Match Puzzle</title>
-<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:840px;margin:2em auto;padding:0 1.5em;color:#1f2328;line-height:1.55}h1{font-size:1.85em;border-bottom:2px solid #C497F0;padding-bottom:.3em}h2{font-size:1.3em;margin-top:1.6em;color:#7B5BB7;border-bottom:1px solid #d0d7de;padding-bottom:.2em}code{background:#f6f8fa;padding:1px 5px;border-radius:3px;font-size:.92em}pre{background:#f6f8fa;padding:.9em 1em;border:1px solid #d0d7de;border-radius:6px;overflow-x:auto}pre code{background:transparent;padding:0}ul{padding-left:1.4em} li{margin:.25em 0}.brief{font-style:italic;color:#57606a;margin-bottom:1.5em}.mermaid{margin:1em 0;text-align:center}</style><script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script></head><body>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:840px;margin:2em auto;padding:0 1.5em;color:#1f2328;line-height:1.55}h1{font-size:1.85em;border-bottom:2px solid #C497F0;padding-bottom:.3em}h2{font-size:1.3em;margin-top:1.6em;color:#7B5BB7;border-bottom:1px solid #d0d7de;padding-bottom:.2em}code{background:#f6f8fa;padding:1px 5px;border-radius:3px;font-size:.92em}pre{background:#f6f8fa;padding:.9em 1em;border:1px solid #d0d7de;border-radius:6px;overflow-x:auto}pre code{background:transparent;padding:0}ul{padding-left:1.4em} li{margin:.25em 0}.brief{font-style:italic;color:#57606a;margin-bottom:1.5em}.mermaid{margin:1em 0;text-align:center}</style></head><body>
 <h1>Micro Match Alchemy: Build a Felgo Tap-to-Clear Match Puzzle</h1>
 <div class="brief">A step-by-step Felgo / QML (Qt Modeling Language) tutorial
 showing how to build a tap-to-clear match-group puzzle with
@@ -11,21 +11,12 @@ scoring) is a separate runnable checkpoint.</div>
 A 6x6 rune-matching puzzle:
 <ul><li>6x6 board of runes (5 distinct types, hue-coded).</li><li>Tap any group of 3+ connected same-type runes -&gt; they clear.</li><li>Tiles above fall down; new tiles refill from the top.</li><li>12 moves; score goal 800; win if score &gt;= 800 before moves run out.</li><li>Score formula: <code>group.length * group.length * 10</code>; bigger groups score disproportionately more.</li><li>Best score and best moves-remaining-on-win persist.</li></ul>
 <h2>High-level game loop</h2>
-The whole game is a four-state machine. The player taps PLAY to leave the menu; tapping qualifying groups stays in <code>playing</code> until either the score goal is met (<code>won</code>) or the move budget runs out (<code>lost</code>). RESTART returns to a fresh <code>playing</code> board.
-<div class="mermaid">
-stateDiagram-v2
-    [*] --> idle
-    idle --> playing : tap PLAY
-    playing --> playing : tap group of 3+
-    playing --> won : score >= goalScore
-    playing --> lost : moves == 0
-    won --> playing : tap RESTART
-    lost --> playing : tap RESTART
-</div>
+The whole game is a four-state machine. The player taps PLAY to leave the menu; tapping qualifying groups stays in <code>playing</code> until either the score goal is met (<code>won)</code> or the move budget runs out (<code>lost)</code>. RESTART returns to a fresh <code>playing</code> board.
+<p><img src="screenshots/diagrams/state-machine.png" alt="" style="max-width:100%;border:1px solid #d0d7de;border-radius:6px"></p>
 <h2>Prerequisites</h2>
 <ul><li>Felgo SDK (Software Development Kit) 4.x installed on top of Qt 6.8 with MinGW (Minimalist GNU for Windows) or MSVC (Microsoft Visual C++) compiler kit.</li><li>Qt Creator with a "Felgo Desktop Qt 6.x" kit registered.</li><li>Basic QML &amp; JavaScript (JS) familiarity.</li></ul>
 <h2>Step 1: Project root + config.json</h2>
-<code>File -&gt; New File or Project -&gt; Felgo Games -&gt; Empty Felgo Project</code>. Name it <code>MicroMatchAlchemy</code>. Felgo SDK 4.x requires a <code>config</code>.json next to the binary at runtime; ship a stub in the project root and have <code>main</code>.cpp self-heal it to multiple paths so the SDK can find it regardless of CWD (current working directory). Same pattern as the other four prototypes.
+<code>File -&gt; New File or Project -&gt; Felgo Games -&gt; Empty Felgo Project</code>. Name it <code>MicroMatchAlchemy</code>. Felgo SDK 4.x requires a <code>config.json</code> next to the binary at runtime; ship a stub in the project root and have <code>main.cpp</code> self-heal it to multiple paths so the SDK can find it regardless of CWD (current working directory). Same pattern as the other four prototypes.
 The first launch shows the title menu. PLAY enters <code>playing</code>; QUIT closes the app.
 <p><img src="screenshots/01-menu.png" alt="" style="max-width:100%;border:1px solid #d0d7de;border-radius:6px"></p>
 <h2>Step 2: Folder layout</h2>
@@ -51,7 +42,7 @@ function makeBoard(rows, columns, runeTypes) {
     for (var i = 0; i &lt; b.length; ++i) b[i] = newRune(runeTypes)
     return b
 }</code></pre>
-<strong>Why pure JS?</strong> Unit tests can drive Board.js via <code>QJSEngine</code> without spinning up a full QML scene. <code>_extras/tests/tst_Board</code>.cpp asserts exact-equality on a seeded board, on flood-fill outputs, and on the gravity-refill column compaction.
+<strong>Why pure JS?</strong> Unit tests can drive Board.js via <code>QJSEngine</code> without spinning up a full QML scene. <code>_extras/tests/tst_Board.cpp</code> asserts exact-equality on a seeded board, on flood-fill outputs, and on the gravity-refill column compaction.
 <h2>Step 4: Flood-fill</h2>
 The connected-group lookup is a textbook iterative breadth-/depth- first search over 4-connected cells. Pseudocode first, then the QML/JS:
 <pre><code>procedure findGroup(board, startIndex, rows, columns):
@@ -120,7 +111,7 @@ Visualisation of one column. Cleared cells are <code>-1</code>; gravity pulls su
 <strong>Why a copy, not in-place mutation?</strong> Reassigning <code>board = next</code> fires the QML binding on every RuneTile's <code>tileType</code>. In-place mutation would silently miss the binding because the array reference hasn't changed.
 <h2>Step 6: RuneTile.qml</h2>
 A stateless visual: takes a <code>tileType</code> (0..4 -&gt; colour) and emits
-<code>clicked(tileIndex</code>) up to the GameScene. Includes a <code>flash(</code>) function for the too-small-group feedback path.
+<code>clicked(tileIndex)</code> up to the GameScene. Includes a <code>flash()</code> function for the too-small-group feedback path.
 <pre><code>Item {
     property int     tileIndex: 0
     property int     tileType:  0
@@ -152,20 +143,7 @@ A stateless visual: takes a <code>tileType</code> (0..4 -&gt; colour) and emits
 <strong>Checkpoint #1: 36 random-coloured rounded rectangles render in a 6x6 grid. The grid is non-interactive until the player taps PLAY.</strong>
 <h2>Step 8: selectCell; the core mechanic</h2>
 The full per-tap pipeline. Every player tap walks this flowchart:
-<div class="mermaid">
-flowchart TD
-    Tap[Player taps tile] --> Find[Board.findGroup<br/>flood-fill from tap]
-    Find --> Size{group.length<br/>>= 3?}
-    Size -- no --> Flash[RuneTile.flash<br/>red overlay, no move spent]
-    Size -- yes --> Score[score += length^2 * 10]
-    Score --> Mark[mark group cells as -1]
-    Mark --> Gravity[Board.applyGravity<br/>compact + refill columns]
-    Gravity --> Dec[moves -= 1]
-    Dec --> End{score >= goal?<br/>moves == 0?}
-    End -- score met --> Won[phase = won, emit gameWon]
-    End -- moves out --> Lost[phase = lost, emit gameLost]
-    End -- neither --> Tap
-</div>
+<p><img src="screenshots/diagrams/select-cell.png" alt="" style="max-width:100%;border:1px solid #d0d7de;border-radius:6px"></p>
 <pre><code>function selectCell(index) {
     if (phase !== &quot;playing&quot;) return
     var group = Board.findGroup(board, index, rows, columns)
@@ -189,10 +167,10 @@ flowchart TD
     if (score &gt;= goalScore) { phase = &quot;won&quot;;  gameWon (score, moves) }
     else if (moves &lt;= 0)    { phase = &quot;lost&quot;; gameLost(score)        }
 }</code></pre>
-The GameOverOverlay reads <code>phase</code> and shows either the win or the lose copy, plus a TRY AGAIN button that calls <code>startGame(</code>).
+The GameOverOverlay reads <code>phase</code> and shows either the win or the lose copy, plus a TRY AGAIN button that calls <code>startGame()</code>.
 <p><img src="screenshots/05-gameover.png" alt="" style="max-width:100%;border:1px solid #d0d7de;border-radius:6px"></p>
 <h2>Step 10: Best-score + best-moves-on-win persistence</h2>
-In <code>Main</code>.qml's <code>onGameWon</code>, store both the highest score AND the fewest moves used on a winning run:
+In <code>Main.qml's</code> <code>onGameWon</code>, store both the highest score AND the fewest moves used on a winning run:
 <pre><code>onGameWon: function(finalScore, movesLeft) {
     var best = storage.getValue(&quot;bestScore&quot;) || 0
     if (finalScore &gt; best) storage.setValue(&quot;bestScore&quot;, finalScore)
@@ -222,5 +200,5 @@ First-build issue: tiles teleported to their new positions after a clear, no fal
 <strong>Fix:</strong> use direct <code>x</code> / <code>y</code> bindings (computed from <code>Board.rowOf</code> / <code>Board.columnOf</code>) on every tile. The <code>Behavior</code> fires when those bindings change.
 <strong>Lesson:</strong> <code>Behavior on x/y</code> works on direct property assignments, not on anchor side-effects. If a smooth transition disappears after an apparent code re-arrangement, that's the first thing to check.
 <h2>Final checklist</h2>
-<ul><li>Initial board renders 36 tiles with no missing values.</li><li>Groups smaller than 3 cannot be cleared and do not spend moves.</li><li>Groups of 3+ clear, score, collapse, and refill correctly.</li><li>No column contains -1 (empty cells) after gravity completes.</li><li>Game ends correctly when moves reach 0 or score reaches goal.</li><li>Best score and best-moves-on-win persist across launches.</li><li><code>logs/run_*</code>.log written on every launch.</li></ul>
-<script>mermaid.initialize({startOnLoad:true,theme:'default',securityLevel:'loose'});</script></body></html>
+<ul><li>Initial board renders 36 tiles with no missing values.</li><li>Groups smaller than 3 cannot be cleared and do not spend moves.</li><li>Groups of 3+ clear, score, collapse, and refill correctly.</li><li>No column contains -1 (empty cells) after gravity completes.</li><li>Game ends correctly when moves reach 0 or score reaches goal.</li><li>Best score and best-moves-on-win persist across launches.</li><li><code>logs/run_*.log</code> written on every launch.</li></ul>
+</body></html>

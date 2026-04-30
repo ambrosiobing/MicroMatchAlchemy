@@ -27,19 +27,10 @@ A 6x6 rune-matching puzzle:
 
 The whole game is a four-state machine. The player taps PLAY to
 leave the menu; tapping qualifying groups stays in `playing` until
-either the score goal is met (`won`) or the move budget runs out
-(`lost`). RESTART returns to a fresh `playing` board.
+either the score goal is met (`won)` or the move budget runs out
+(`lost)`. RESTART returns to a fresh `playing` board.
 
-```mermaid
-stateDiagram-v2
-    [*] --> idle
-    idle --> playing : tap PLAY
-    playing --> playing : tap group of 3+
-    playing --> won : score >= goalScore
-    playing --> lost : moves == 0
-    won --> playing : tap RESTART
-    lost --> playing : tap RESTART
-```
+![](screenshots/diagrams/state-machine.png)
 
 
 ## Prerequisites
@@ -52,9 +43,9 @@ stateDiagram-v2
 ## Step 1: Project root + config.json
 
 `File -> New File or Project -> Felgo Games -> Empty Felgo Project`.
-Name it `MicroMatchAlchemy`. Felgo SDK 4.x requires a `config`.json
+Name it `MicroMatchAlchemy`. Felgo SDK 4.x requires a `config.json`
 next to the binary at runtime; ship a stub in the project root and
-have `main`.cpp self-heal it to multiple paths so the SDK can find
+have `main.cpp` self-heal it to multiple paths so the SDK can find
 it regardless of CWD (current working directory). Same pattern as
 the other four prototypes.
 
@@ -100,7 +91,7 @@ function makeBoard(rows, columns, runeTypes) {
 ```
 
 **Why pure JS?** Unit tests can drive Board.js via `QJSEngine`
-without spinning up a full QML scene. `_extras/tests/tst_Board`.cpp
+without spinning up a full QML scene. `_extras/tests/tst_Board.cpp`
 asserts exact-equality on a seeded board, on flood-fill outputs, and
 on the gravity-refill column compaction.
 
@@ -205,7 +196,7 @@ hasn't changed.
 
 A stateless visual: takes a `tileType` (0..4 -> colour) and emits
 
-`clicked(tileIndex`) up to the GameScene. Includes a `flash(`)
+`clicked(tileIndex)` up to the GameScene. Includes a `flash()`
 function for the too-small-group feedback path.
 
 ```qml
@@ -256,20 +247,7 @@ Repeater {
 
 The full per-tap pipeline. Every player tap walks this flowchart:
 
-```mermaid
-flowchart TD
-    Tap[Player taps tile] --> Find[Board.findGroup<br/>flood-fill from tap]
-    Find --> Size{group.length<br/>>= 3?}
-    Size -- no --> Flash[RuneTile.flash<br/>red overlay, no move spent]
-    Size -- yes --> Score[score += length^2 * 10]
-    Score --> Mark[mark group cells as -1]
-    Mark --> Gravity[Board.applyGravity<br/>compact + refill columns]
-    Gravity --> Dec[moves -= 1]
-    Dec --> End{score >= goal?<br/>moves == 0?}
-    End -- score met --> Won[phase = won, emit gameWon]
-    End -- moves out --> Lost[phase = lost, emit gameLost]
-    End -- neither --> Tap
-```
+![](screenshots/diagrams/select-cell.png)
 
 ```qml
 function selectCell(index) {
@@ -310,14 +288,14 @@ function checkEnd() {
 ```
 
 The GameOverOverlay reads `phase` and shows either the win or the
-lose copy, plus a TRY AGAIN button that calls `startGame(`).
+lose copy, plus a TRY AGAIN button that calls `startGame()`.
 
 ![](screenshots/05-gameover.png)
 
 
 ## Step 10: Best-score + best-moves-on-win persistence
 
-In `Main`.qml's `onGameWon`, store both the highest score AND the
+In `Main.qml's` `onGameWon`, store both the highest score AND the
 fewest moves used on a winning run:
 
 ```qml
@@ -390,4 +368,4 @@ an apparent code re-arrangement, that's the first thing to check.
 - No column contains -1 (empty cells) after gravity completes.
 - Game ends correctly when moves reach 0 or score reaches goal.
 - Best score and best-moves-on-win persist across launches.
-- `logs/run_*`.log written on every launch.
+- `logs/run_*.log` written on every launch.
