@@ -39,14 +39,18 @@ your moves run out.
 
 ### From Qt Creator
 Open `MicroMatchAlchemy.pro`, pick the
-`Felgo_SDK_Desktop_Qt_6_8_3_MinGW_64_bit` kit, hit **Run**. The app
-writes its run log to `<project>/logs/run_<timestamp>.log`; a copy of
-the most recent log is kept at `<project>/logs/latest.log`.
+`Felgo_SDK_Desktop_Qt_6_8_3_MinGW_64_bit` kit, then trigger
+**Felgo Hot Reload** (instead of plain Run). When the
+*Felgo Hot Reload (Felgo SDK)* dialog appears, click
+**Start at Desktop Client**. The app writes its run log to
+`<project>/logs/run_<timestamp>.log`; a copy of the most recent log
+is kept at `<project>/logs/latest.log`.
 
 ### Felgo Live (Hot Reload)
-Open `MicroMatchAlchemy.pro` in the Felgo Live client; saved QML
-(Qt Modeling Language) changes propagate to the running app without
-a full rebuild.
+Saved QML (Qt Modeling Language) changes propagate to the running
+desktop client without a full rebuild, so iteration on visuals or
+gameplay tuning is sub-second. The same `.pro` file drives both
+plain qmake builds and the Hot Reload workflow.
 
 ## Final tested build
 
@@ -59,7 +63,7 @@ Last clean run from a fresh checkout:
 | Qt                 | 6.8.3 |
 | Compiler kit       | MinGW 64-bit (`Felgo_SDK_Desktop_Qt_6_8_3_MinGW_64_bit`) |
 | Operating system   | Windows 11 |
-| Launch path        | Qt Creator -> Run (green play button) |
+| Launch path        | Qt Creator -> Felgo Hot Reload -> Start at Desktop Client |
 | Result             | Menu loads, PLAY enters board, taps clear groups, gravity + refill animate, win/lose triggers, RESTART works, best-score and best-moves persist across relaunch |
 | Audio              | `clear.wav` plays on group clear (silent if file omitted) |
 | Log written to     | `logs/run_<timestamp>.log` + `logs/latest.log` |
