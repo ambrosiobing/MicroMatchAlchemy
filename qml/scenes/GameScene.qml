@@ -182,4 +182,11 @@ Scene {
         // almost always runs once. Capped at 8 attempts to be safe.
         var fresh = Board.makeBoard(rows, columns, runeTypes)
         var attempts = 0
-        while (!Board.hasAnyMove(fresh, r
+        while (!Board.hasAnyMove(fresh, rows, columns) && attempts < 8) {
+            fresh = Board.makeBoard(rows, columns, runeTypes)
+            ++attempts
+        }
+        board = fresh
+        score = 0
+        moves = movesMax
+        phas

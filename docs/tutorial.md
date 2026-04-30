@@ -1,13 +1,12 @@
 # Micro Match Alchemy: Build a Felgo Tap-to-Clear Match Puzzle
 
-> A 8-10 hour, step-by-step Felgo / QML (Qt Modeling Language)
-tutorial showing how to build a tap-to-clear match-group puzzle with
+> A step-by-step Felgo / QML (Qt Modeling Language) tutorial
+showing how to build a tap-to-clear match-group puzzle with
 flood-fill grouping, column gravity, refill, and a fixed-move
 score-goal win condition.
 
-This is the most logic-heavy of the five challenge prototypes; and
-the most teachable. Every milestone (board generation, flood-fill,
-gravity, refill, scoring) is a separate runnable checkpoint.
+Every milestone (board generation, flood-fill, gravity, refill,
+scoring) is a separate runnable checkpoint.
 
 ![](screenshots/02-board.png)
 

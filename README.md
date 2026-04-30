@@ -116,4 +116,20 @@ rune types in a typical fresh refill.
 
 Source code: MIT (see `LICENSE`).
 
-Bundled audio: see `assets/snd/CREDITS.txt` for the 
+Bundled audio: see `assets/snd/CREDITS.txt` for the third-party
+licence applying to `clear.wav`.
+
+## Acknowledgements
+
+Flood-fill and gravity-refill patterns referenced from the Felgo
+Match-3 sample app. All visuals are QML primitives; no sprite
+imports.
+
+### Audio
+
+`assets/snd/clear.wav` is a WAV-converted version of the
+**Board Start** sound effect by *el_boss* (Freesound), distributed
+via [Pixabay](https://pixabay.com/sound-effects/film-special-effects-board-start-38127/)
+under the [Pixabay Content License](https://pixabay.com/service/license-summary/).
+Free for commercial and non-commercial use; attribution is not
+required but is provided here as a courtesy.

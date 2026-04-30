@@ -201,4 +201,8 @@ int main(int argc, char *argv[])
     felgo.setPreservePlatformFonts(true);
     engine.load(QUrl(felgo.mainQmlFileName()));
 
-    const i
+    const int rc = app.exec();
+    qInfo("MicroMatchAlchemy exited with code %d", rc);
+    if (g_logStream.device()) { g_logStream.flush(); g_logFile.close(); }
+    return rc;
+}

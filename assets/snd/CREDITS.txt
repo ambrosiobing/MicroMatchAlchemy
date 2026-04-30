@@ -28,4 +28,6 @@ It does NOT permit:
   - selling or redistributing the audio in its original form (e.g. as a
     stock-asset download for resale)
   - using the audio in a way that suggests endorsement by Pixabay or the
- 
+    artist
+  - using identifiable people, brands, or trademarks featured in the audio
+    in a way that suggests endorsement

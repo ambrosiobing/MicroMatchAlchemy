@@ -99,4 +99,5 @@ function applyGravity(board, rows, columns, runeTypes) {
     return out
 }
 
-// --- validation ------------
+// --- validation ------------------------------------------------------
+// Returns true if the current board has at lea
