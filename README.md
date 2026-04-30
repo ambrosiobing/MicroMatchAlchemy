@@ -54,8 +54,8 @@ Last clean run from a fresh checkout:
 
 | | |
 |---|---|
-| Date tested        | <!-- YYYY-MM-DD --> |
-| Felgo SDK          | 4.x (exact version: <!-- e.g. 4.6.0 -->) |
+| Date tested        | 2026-04-30 |
+| Felgo SDK          | 4.3.1 (build `c3e89a6a5`) |
 | Qt                 | 6.8.3 |
 | Compiler kit       | MinGW 64-bit (`Felgo_SDK_Desktop_Qt_6_8_3_MinGW_64_bit`) |
 | Operating system   | Windows 11 |
