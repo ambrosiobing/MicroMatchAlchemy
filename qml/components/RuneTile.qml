@@ -62,8 +62,13 @@ Item {
         onClicked: root.clicked(root.tileIndex)
     }
 
-    // Behavior on x/y; keep these even though the current Repeater
-    // model binds tile position to a fixed (index -> row/column) slot.
-    // The Behaviors are scaffolding for the stretch goal "real fall
-    // animation" (index by stable tile-id, not slot, so a tile's row
-    // actually changes after
+
+    // Smooth y/x transitions so the new-board reassignment after
+    // applyGravity reads visually as a "fall" rather than a teleport.
+    // QML Behavior on x/y fires on direct property assignments to x/y
+    // (NOT on anchor side-effects); this is why the tile binds x/y via
+    // Board.rowOf/columnOf rather than anchoring to the parent.
+    //   https://doc.qt.io/qt-6/qml-qtquick-behavior.html
+    Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutQuad } }
+    Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+}

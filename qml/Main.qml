@@ -46,4 +46,23 @@ GameWindow {
             }
         }
 
-        onGam
+        onGameLost: function(finalScore) {
+            // Even on a lost run, a high score survives. Best-win-moves is
+            // NOT updated here; that field tracks winning runs only.
+            var best = storage.getValue("bestScore") || 0
+            if (finalScore > best) {
+                storage.setValue("bestScore", finalScore)
+                bestScore = finalScore
+            }
+        }
+
+        Component.onCompleted: {
+            // Hydrate the GameScene's display-bound properties from
+            // persistent storage on first show. The scene reads these
+            // for its HUD; without this hook the HUD would always start
+            // at 0 / -1 even when the user has won previously.
+            gameScene.bestScore    = storage.getValue("bestScore")    || 0
+            gameScene.bestWinMoves = storage.getValue("bestWinMoves") || -1
+        }
+    }
+}

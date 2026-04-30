@@ -189,4 +189,70 @@ Scene {
         board = fresh
         score = 0
         moves = movesMax
-        phas
+        phase = "playing"
+    }
+
+    function selectCell(index) {
+        if (phase !== "playing") return
+        if (!board || index < 0 || index >= board.length) return
+        var group = Board.findGroup(board, index, rows, columns)
+        if (group.length < 3) {
+            // Visual feedback only; don't spend a move.
+            var tile = boardRepeater.itemAt(index)
+            if (tile) tile.flash()
+            return
+        }
+        // Score, clear, gravity-refill, decrement moves, check end.
+        score += Board.scoreFor(group.length)
+        var next = board.slice()
+        for (var i = 0; i < group.length; ++i) next[group[i]] = -1
+        next = Board.applyGravity(next, rows, columns, runeTypes)
+        board = next
+        moves -= 1
+        clearSfx.stop(); clearSfx.play()
+        // After every gravity-refill, check whether the new board has any
+        // clearable group at all. If not, auto-reshuffle and toast the
+        // player so they understand why the board changed under them.
+        if (!Board.hasAnyMove(board, rows, columns)) {
+            board = Board.makeBoard(rows, columns, runeTypes)
+            hintToastActive = true
+            hintToastTimer.restart()
+        }
+        checkEnd()
+    }
+
+    function checkEnd() {
+        if (score >= goalScore) {
+            phase = "won"
+            gameWon(score, moves)
+        } else if (moves <= 0) {
+            phase = "lost"
+            gameLost(score)
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Overlays
+    // -----------------------------------------------------------------
+    MenuOverlay {
+        anchors.fill: parent
+        opacity: gameScene.phase === "idle" ? 1.0 : 0.0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+        onStartRequested: gameScene.startGame()
+    }
+
+    GameOverOverlay {
+        anchors.fill: parent
+        wonGame:      gameScene.phase === "won"
+        finalScore:   gameScene.score
+        bestScore:    gameScene.bestScore
+        movesLeft:    gameScene.moves
+        bestWinMoves: gameScene.bestWinMoves
+        opacity: (gameScene.phase === "won" || gameScene.phase === "lost") ? 1.0 : 0.0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+        onRetryRequested: gameScene.startGame()
+        onMenuRequested:  { gameScene.phase = "idle" }
+    }
+}

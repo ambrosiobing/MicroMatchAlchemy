@@ -100,4 +100,17 @@ function applyGravity(board, rows, columns, runeTypes) {
 }
 
 // --- validation ------------------------------------------------------
-// Returns true if the current board has at lea
+// Returns true if the current board has at least one clearable group.
+// Used so the scene can detect a deadlock after a clear and trigger a
+// soft-reshuffle. Without this hook, an unlucky refill could leave the
+// player stuck with no legal moves while the move counter still ticks.
+function hasAnyMove(board, rows, columns) {
+    var seen = {}
+    for (var i = 0; i < board.length; ++i) {
+        if (seen[i] || board[i] < 0) continue
+        var g = findGroup(board, i, rows, columns)
+        for (var k = 0; k < g.length; ++k) seen[g[k]] = true
+        if (g.length >= 3) return true
+    }
+    return false
+}
