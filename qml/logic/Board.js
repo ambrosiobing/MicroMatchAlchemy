@@ -35,9 +35,11 @@ function makeBoard(rows, columns, runeTypes) {
 }
 
 // --- flood-fill ------------------------------------------------------
-// 4-neighbour breadth-first flood-fill from startIndex over cells of the
+// 4-neighbour iterative flood-fill from startIndex over cells of the
 // same type. Cells with value < 0 are treated as empty and never join
-// the group.
+// the group. Traversal order doesn't affect correctness (we visit every
+// reachable same-type cell exactly once); see findGroup() for the
+// stack-based implementation.
 function neighbours(index, rows, columns) {
     var r = rowOf(index, columns)
     var c = columnOf(index, columns)
@@ -51,11 +53,13 @@ function neighbours(index, rows, columns) {
 function findGroup(board, startIndex, rows, columns) {
     var wanted = board[startIndex]
     if (wanted < 0) return []
-    // Iterative BFS (breadth-first search), not recursive: a fully-
-    // connected board of one rune type would recurse 36 deep on the
-    // spec 6x6 (and much further on a hypothetical larger grid).
-    // Iterative keeps the JS (JavaScript) call stack out of the
-    // picture and lets the algorithm scale linearly.
+    // Iterative DFS via an explicit stack (open.pop() is LIFO), not
+    // recursive: a fully-connected board of one rune type would recurse
+    // 36 deep on the spec 6x6 (and much further on a hypothetical larger
+    // grid). Iterative keeps the JS (JavaScript) call stack out of the
+    // picture and lets the algorithm scale linearly. Traversal order
+    // doesn't matter for flood-fill; switching pop() to shift() would
+    // make this BFS without changing the returned group.
     var open  = [ startIndex ]
     var seen  = {}
     var group = []

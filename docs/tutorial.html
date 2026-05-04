@@ -44,7 +44,7 @@ function makeBoard(rows, columns, runeTypes) {
 }</code></pre>
 <strong>Why pure JS?</strong> Unit tests can drive Board.js via <code>QJSEngine</code> without spinning up a full QML scene. <code>_extras/tests/tst_Board.cpp</code> asserts exact-equality on a seeded board, on flood-fill outputs, and on the gravity-refill column compaction.
 <h2>Step 4: Flood-fill</h2>
-The connected-group lookup is a textbook iterative breadth-/depth- first search over 4-connected cells. Pseudocode first, then the QML/JS:
+The connected-group lookup is a textbook iterative flood-fill over 4-connected cells; an explicit stack drives a depth-first traversal, though the order doesn't change correctness for this problem. Pseudocode first, then the QML/JS:
 <pre><code>procedure findGroup(board, startIndex, rows, columns):
     wanted := board[startIndex]
     if wanted &lt; 0: return empty list
@@ -200,5 +200,5 @@ First-build issue: tiles teleported to their new positions after a clear, no fal
 <strong>Fix:</strong> use direct <code>x</code> / <code>y</code> bindings (computed from <code>Board.rowOf</code> / <code>Board.columnOf</code>) on every tile. The <code>Behavior</code> fires when those bindings change.
 <strong>Lesson:</strong> <code>Behavior on x/y</code> works on direct property assignments, not on anchor side-effects. If a smooth transition disappears after an apparent code re-arrangement, that's the first thing to check.
 <h2>Final checklist</h2>
-<ul><li>Initial board renders 36 tiles with no missing values.</li><li>Groups smaller than 3 cannot be cleared and do not spend moves.</li><li>Groups of 3+ clear, score, collapse, and refill correctly.</li><li>No column contains -1 (empty cells) after gravity completes.</li><li>Game ends correctly when moves reach 0 or score reaches goal.</li><li>Best score and best-moves-on-win persist across launches.</li><li><code>logs/run_*.log</code> written on every launch.</li></ul>
+<ul><li>Initial board renders 36 tiles with no missing values.</li><li>Groups smaller than 3 cannot be cleared and do not spend moves.</li><li>Groups of 3+ clear, score, collapse, and refill correctly.</li><li>No column contains -1 (empty cells) after gravity completes.</li><li>Best score and best-moves-on-win persist across launches.</li><li><code>logs/run_*.log</code> written on every launch.</li></ul>
 </body></html>

@@ -98,9 +98,10 @@ on the gravity-refill column compaction.
 
 ## Step 4: Flood-fill
 
-The connected-group lookup is a textbook iterative breadth-/depth-
-first search over 4-connected cells. Pseudocode first, then the
-QML/JS:
+The connected-group lookup is a textbook iterative flood-fill over
+4-connected cells; an explicit stack drives a depth-first traversal,
+though the order doesn't change correctness for this problem.
+Pseudocode first, then the QML/JS:
 
 ```qml
 procedure findGroup(board, startIndex, rows, columns):
@@ -366,6 +367,5 @@ an apparent code re-arrangement, that's the first thing to check.
 - Groups smaller than 3 cannot be cleared and do not spend moves.
 - Groups of 3+ clear, score, collapse, and refill correctly.
 - No column contains -1 (empty cells) after gravity completes.
-- Game ends correctly when moves reach 0 or score reaches goal.
 - Best score and best-moves-on-win persist across launches.
 - `logs/run_*.log` written on every launch.
