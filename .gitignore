@@ -38,3 +38,7 @@ ehthumbs.db
 .vscode/
 *.swp
 *~
+
+# Developer-only scratchpad (tests, audio masters, throwaway scripts).
+# Not tracked; lives outside the public submission.
+_extras/

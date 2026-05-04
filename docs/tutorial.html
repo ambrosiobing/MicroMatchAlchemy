@@ -16,7 +16,7 @@ The whole game is a four-state machine. The player taps PLAY to leave the menu; 
 <h2>Prerequisites</h2>
 <ul><li>Felgo SDK (Software Development Kit) 4.x installed on top of Qt 6.8 with MinGW (Minimalist GNU for Windows) or MSVC (Microsoft Visual C++) compiler kit.</li><li>Qt Creator with a "Felgo Desktop Qt 6.x" kit registered.</li><li>Basic QML &amp; JavaScript (JS) familiarity.</li></ul>
 <h2>Step 1: Project root + config.json</h2>
-<code>File -&gt; New File or Project -&gt; Felgo Games -&gt; Empty Felgo Project</code>. Name it <code>MicroMatchAlchemy</code>. Felgo SDK 4.x requires a <code>config.json</code> next to the binary at runtime; ship a stub in the project root and have <code>main.cpp</code> self-heal it to multiple paths so the SDK can find it regardless of CWD (current working directory). Same pattern as the other four prototypes.
+<code>File -&gt; New File or Project -&gt; Felgo Games -&gt; Empty Felgo Project</code>. Name it <code>MicroMatchAlchemy</code>. Felgo SDK 4.x requires a <code>config.json</code> next to the binary at runtime; ship a stub in the project root and have <code>main.cpp</code> self-heal it to multiple paths so the SDK can find it regardless of CWD (current working directory).
 The first launch shows the title menu. PLAY enters <code>playing</code>; QUIT closes the app.
 <p><img src="screenshots/01-menu.png" alt="" style="max-width:100%;border:1px solid #d0d7de;border-radius:6px"></p>
 <h2>Step 2: Folder layout</h2>
@@ -42,7 +42,7 @@ function makeBoard(rows, columns, runeTypes) {
     for (var i = 0; i &lt; b.length; ++i) b[i] = newRune(runeTypes)
     return b
 }</code></pre>
-<strong>Why pure JS?</strong> Unit tests can drive Board.js via <code>QJSEngine</code> without spinning up a full QML scene. <code>_extras/tests/tst_Board.cpp</code> asserts exact-equality on a seeded board, on flood-fill outputs, and on the gravity-refill column compaction.
+<strong>Why pure JS?</strong> The rules layer can be driven by <code>QJSEngine</code> without spinning up a full QML scene, which keeps the unit-test loop fast and means the gameplay rules don't depend on any visible widget hierarchy.
 <h2>Step 4: Flood-fill</h2>
 The connected-group lookup is a textbook iterative flood-fill over 4-connected cells; an explicit stack drives a depth-first traversal, though the order doesn't change correctness for this problem. Pseudocode first, then the QML/JS:
 <pre><code>procedure findGroup(board, startIndex, rows, columns):
@@ -200,5 +200,5 @@ First-build issue: tiles teleported to their new positions after a clear, no fal
 <strong>Fix:</strong> use direct <code>x</code> / <code>y</code> bindings (computed from <code>Board.rowOf</code> / <code>Board.columnOf</code>) on every tile. The <code>Behavior</code> fires when those bindings change.
 <strong>Lesson:</strong> <code>Behavior on x/y</code> works on direct property assignments, not on anchor side-effects. If a smooth transition disappears after an apparent code re-arrangement, that's the first thing to check.
 <h2>Final checklist</h2>
-<ul><li>Initial board renders 36 tiles with no missing values.</li><li>Groups smaller than 3 cannot be cleared and do not spend moves.</li><li>Groups of 3+ clear, score, collapse, and refill correctly.</li><li>No column contains -1 (empty cells) after gravity completes.</li><li>Best score and best-moves-on-win persist across launches.</li><li><code>logs/run_*.log</code> written on every launch.</li></ul>
+<ul><li>Initial board renders 36 tiles with no missing values.</li><li>Groups smaller than 3 cannot be cleared and do not spend moves.</li><li>Groups of 3+ clear, score, collapse, and refill correctly.</li><li>No column contains -1 (empty cells) after gravity completes.</li><li>Game ends correctly when moves reach 0 or score reaches goal.</li><li>Best score and best-moves-on-win persist across launches.</li><li><code>logs/run_*.log</code> written on every launch.</li></ul>
 </body></html>

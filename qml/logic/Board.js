@@ -4,7 +4,8 @@
 // this module and reassigns its 'board' property after every change so
 // QML bindings see the new array reference. Keeping the rules here
 // (instead of inside GameScene.qml) makes the game unit-testable via
-// QJSEngine. See _extras/tests/tst_Board.cpp.
+// QJSEngine, which makes the rules layer testable in isolation without
+// spinning up a QML scene.
 
 .pragma library
 

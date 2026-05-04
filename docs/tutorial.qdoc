@@ -45,8 +45,7 @@ either the score goal is met (\c won) or the move budget runs out
 Name it \c MicroMatchAlchemy. Felgo SDK 4.x requires a \c config.json
 next to the binary at runtime; ship a stub in the project root and
 have \c main.cpp self-heal it to multiple paths so the SDK can find
-it regardless of CWD (current working directory). Same pattern as
-the other four prototypes.
+it regardless of CWD (current working directory).
 
 The first launch shows the title menu. PLAY enters \c playing;
 QUIT closes the app.
@@ -84,10 +83,10 @@ function makeBoard(rows, columns, runeTypes) {
 }
 \endcode
 
-\b{Why pure JS?} Unit tests can drive Board.js via \c QJSEngine
-without spinning up a full QML scene. \c _extras/tests/tst_Board.cpp
-asserts exact-equality on a seeded board, on flood-fill outputs, and
-on the gravity-refill column compaction.
+\b{Why pure JS?} The rules layer can be driven by \c QJSEngine
+without spinning up a full QML scene, which keeps the unit-test
+loop fast and means the gameplay rules don't depend on any
+visible widget hierarchy.
 
 \section1 Step 4: Flood-fill
 The connected-group lookup is a textbook iterative flood-fill over
@@ -333,6 +332,7 @@ an apparent code re-arrangement, that's the first thing to check.
   \li Groups smaller than 3 cannot be cleared and do not spend moves.
   \li Groups of 3+ clear, score, collapse, and refill correctly.
   \li No column contains -1 (empty cells) after gravity completes.
+  \li Game ends correctly when moves reach 0 or score reaches goal.
   \li Best score and best-moves-on-win persist across launches.
   \li \c logs/run_*.log written on every launch.
 \endlist
